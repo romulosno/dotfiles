@@ -75,7 +75,7 @@
 	:config
 	(setq company-minimum-prefix-length 1)
 	:ensure t)
-
+(add-hook 'after-init-hook 'global-company-mode)
 (use-package dap-mode
   :ensure t)
 
@@ -180,4 +180,7 @@
 (use-package flymake
 	:commands
 	(flymake-show-diagnostic)
+	:ensure t)
+
+(use-package vimrc-mode
 	:ensure t)
