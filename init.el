@@ -31,7 +31,7 @@
 		 ("XXX+" . "#dc752f")
 		 ("\\?\\?\\?+" . "#dc752f")))
  '(package-selected-packages
-	 '(lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package))
+	 '(evil evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package))
  '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e")))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -169,8 +169,9 @@
 	:config
 	(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 	:hook
-	(helm-projectile-on)
 	(projectile . lsp-dired-mode)
+	:init
+	(helm-projectile-on)
 	:ensure t)
 (projectile-mode +1)
 
@@ -184,3 +185,7 @@
 
 (use-package vimrc-mode
 	:ensure t)
+
+(use-package evil
+	:ensure t)
+(evil-mode 1)
