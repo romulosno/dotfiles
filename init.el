@@ -185,7 +185,3 @@
 
 (use-package vimrc-mode
 	:ensure t)
-
-(use-package evil
-	:ensure t)
-(evil-mode 1)
