@@ -31,7 +31,7 @@
 		 ("XXX+" . "#dc752f")
 		 ("\\?\\?\\?+" . "#dc752f")))
  '(package-selected-packages
-	 '(evil evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package))
+	 '(org-mind-map helm-rg evil evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package))
  '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e")))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -61,6 +61,13 @@
 (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
 
 (use-package helm
+	:config
+	(define-key global-map [remap find-file] 'helm-find-files)
+	(define-key global-map [remap occur] 'helm-occur)
+	(define-key global-map [remap list-buffers] 'helm-buffers-list)
+	(define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
+	(define-key global-map [remap execute-extended-command] 'helm-M-x)
+	(define-key global-map [remap apropos-command] 'helm-apropos)
 	:ensure t)
 
 (use-package ido
@@ -185,3 +192,20 @@
 
 (use-package vimrc-mode
 	:ensure t)
+;; This is an Emacs package that creates graphviz directed graphs from
+;; the headings of an org file
+(use-package org-mind-map
+  :init
+  (require 'ox-org)
+  :ensure t
+  ;; Uncomment the below if 'ensure-system-packages` is installed
+  ;;:ensure-system-package (gvgen . graphviz)
+  :config
+  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
+  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
+  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
+  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
+  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
+  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
+  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
+  )
