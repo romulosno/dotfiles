@@ -11,9 +11,13 @@
 	 [default default default italic underline success warning error])
  '(ansi-color-names-vector
 	 ["#2e3436" "#a40000" "#4e9a06" "#c4a000" "#204a87" "#5c3566" "#729fcf" "#eeeeec"])
+ '(ansi-term-color-vector
+	 [unspecified "#FFFFFF" "#d15120" "#5f9411" "#d2ad00" "#6b82a7" "#a66bab" "#6b82a7" "#505050"] t)
  '(custom-enabled-themes '(spacemacs-dark))
  '(custom-safe-themes
-	 '("3b8284e207ff93dfc5e5ada8b7b00a3305351a3fb222782d8033a400a48eca48" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" default))
+	 '("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "e29a6c66d4c383dbda21f48effe83a1c2a1058a17ac506d60889aba36685ed94" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "171d1ae90e46978eb9c342be6658d937a83aaa45997b1d7af7657546cae5985b" "36ca8f60565af20ef4f30783aa16a26d96c02df7b4e54e9900a5138fb33808da" "bf798e9e8ff00d4bf2512597f36e5a135ce48e477ce88a0764cfb5d8104e8163" "76b4632612953d1a8976d983c4fdf5c3af92d216e2f87ce2b0726a1f37606158" "d9646b131c4aa37f01f909fbdd5a9099389518eb68f25277ed19ba99adeb7279" "a325ba05dc3b5c2fa89af0ff354bbbe90251fb1a6e6d5682977cebe61ce72ab7" "3b8284e207ff93dfc5e5ada8b7b00a3305351a3fb222782d8033a400a48eca48" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" default))
+ '(fci-rule-character-color "#d9d9d9")
+ '(fci-rule-color "#d9d9d9")
  '(hl-todo-keyword-faces
 	 '(("TODO" . "#dc752f")
 		 ("NEXT" . "#dc752f")
@@ -31,17 +35,24 @@
 		 ("XXX+" . "#dc752f")
 		 ("\\?\\?\\?+" . "#dc752f")))
  '(package-selected-packages
-	 '(ample-theme zenburn-theme org-mind-map helm-rg evil evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package))
- '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e")))
+	 '(smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package))
+ '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e"))
+ '(tetris-x-colors
+	 [[229 192 123]
+		[97 175 239]
+		[209 154 102]
+		[224 108 117]
+		[152 195 121]
+		[198 120 221]
+		[86 182 194]]))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(line-number ((t (:inherit default)))))
 
-(setq column-number-mode t)
-(global-display-line-numbers-mode t)
+(global-linum-mode t)
 (show-paren-mode t)
 (setq inhibit-startup-screen t)
 (menu-bar-mode -1)
@@ -192,24 +203,20 @@
 
 (use-package vimrc-mode
 	:ensure t)
-;; This is an Emacs package that creates graphviz directed graphs from
-;; the headings of an org file
+
 (use-package org-mind-map
   :init
   (require 'ox-org)
   :ensure t
-  ;; Uncomment the below if 'ensure-system-packages` is installed
-  ;;:ensure-system-package (gvgen . graphviz)
   :config
-  (setq org-mind-map-engine "dot")       ; Default. Directed Graph
-  ;; (setq org-mind-map-engine "neato")  ; Undirected Spring Graph
-  ;; (setq org-mind-map-engine "twopi")  ; Radial Layout
-  ;; (setq org-mind-map-engine "fdp")    ; Undirected Spring Force-Directed
-  ;; (setq org-mind-map-engine "sfdp")   ; Multiscale version of fdp for the layout of large graphs
-  ;; (setq org-mind-map-engine "twopi")  ; Radial layouts
-  ;; (setq org-mind-map-engine "circo")  ; Circular Layout
-  )
+  (setq org-mind-map-engine "dot"))
 
-(use-package ample-theme
+(use-package atom-one-dark-theme
 	:ensure t)
-(load-theme 'ample t t)
+(load-theme 'atom-one-dark t)
+
+(use-package smart-mode-line
+	:ensure t
+	:config
+	(setq sml/theme 'respectful))
+(smart-mode-line-enable)
