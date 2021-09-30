@@ -53,6 +53,7 @@
  '(line-number ((t (:inherit default)))))
 
 (global-linum-mode t)
+(global-visual-line-mode t)
 (show-paren-mode t)
 (setq inhibit-startup-screen t)
 (menu-bar-mode -1)
@@ -72,6 +73,8 @@
 (global-set-key (kbd "C-c <down>")  'windmove-down)
 (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
 (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+
+(define-key global-map [remap forward-word] 'forward-to-word)
 
 (use-package helm
 	:config
@@ -132,6 +135,8 @@
   :ensure t)
 
 (use-package lsp-treemacs
+	:config
+		(local-set-key (kbd "C-l T v") 'lsp-treemacs-symbols)
   :commands
 	lsp-treemacs-errors-list
 	:init
