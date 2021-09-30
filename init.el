@@ -35,7 +35,7 @@
 		 ("XXX+" . "#dc752f")
 		 ("\\?\\?\\?+" . "#dc752f")))
  '(package-selected-packages
-	 '(smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package))
+	 '(org-brain smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package))
  '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e"))
  '(tetris-x-colors
 	 [[229 192 123]
@@ -60,10 +60,12 @@
 (tool-bar-mode -1)
 (visual-line-mode 1)
 (electric-pair-mode 1)
+(desktop-save-mode 1)
 
 (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 1024 1024))
 
+(global-set-key "\M-f" 'forward-to-word)
 (global-set-key (kbd "C-c <left>")  'windmove-left)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
 (global-set-key (kbd "C-c <up>")    'windmove-up)
@@ -108,13 +110,13 @@
   (define-key lsp-mode-map (kbd "C-l") lsp-command-map)
   :hook (
 				 (typescript-mode . lsp-deferred)
-				 (js-mode . lsp)
-				 (scss-mode . lsp)
+				 (js-mode . lsp-deferred)
+				 (scss-mode . lsp-deferred)
 				 (lsp-deferred . lsp-enable-which-key-integration)
-				 (lsp . lsp-ui-mode)
-				 (lsp . lsp-ui-peek-mode)
-				 (lsp . dap-mode)
-				 (lsp . company-mode))
+				 (lsp-deferred . lsp-ui-mode)
+				 (lsp-deferred . lsp-ui-peek-mode)
+				 (lsp-deferred . dap-mode)
+				 (lsp-deferred . company-mode))
   :commands 
 	(lsp lsp-deferred)
   :ensure t)
@@ -204,13 +206,6 @@
 (use-package vimrc-mode
 	:ensure t)
 
-(use-package org-mind-map
-  :init
-  (require 'ox-org)
-  :ensure t
-  :config
-  (setq org-mind-map-engine "dot"))
-
 (use-package atom-one-dark-theme
 	:ensure t)
 (load-theme 'atom-one-dark t)
@@ -220,3 +215,8 @@
 	:config
 	(setq sml/theme 'respectful))
 (smart-mode-line-enable)
+
+;; Functions
+(defun npm-start()
+	(interactive)
+	(npm-mode--exec-process "npm start"))
