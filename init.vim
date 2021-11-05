@@ -17,6 +17,7 @@ set cursorline
 set number
 set ignorecase
 set smartcase
+set hidden
 set title
 let python_highlight_all = 1 
 syntax on
@@ -41,10 +42,6 @@ set wildmenu
 " Wildignore
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip     " MacOSX/Linux
 
-" Enable folding
-set foldmethod=indent
-set foldlevel=99
-
 " Tab size
 set tabstop=2
 set softtabstop=2
@@ -61,9 +58,6 @@ nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 set splitbelow
 set splitright
-
-" Enable folding with the spacebar
-nnoremap <space> za
 
 
 let g:completion_confirm_key = ""
@@ -163,8 +157,6 @@ cmp.setup({
 	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
 	local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
-
-	-- Enable completion triggered by <c-x><c-o>
 	buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
 
 	local opts = { noremap=true, silent=true }
