@@ -8,6 +8,7 @@ Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'folke/lsp-trouble.nvim'
+Plug 'airblade/vim-gitgutter'
 call plug#end()
 
 set nocompatible
@@ -50,6 +51,7 @@ set shiftwidth=2
 let mapleader=","
 let g:user_emmet_leader_key=','
 let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
+let g:gitgutter_max_signs = -1
 
 " Split navigations
 nnoremap <C-J> <C-W><C-J>
