@@ -1,73 +1,61 @@
 call plug#begin('~/.vim/plugged')
-Plug 'neovim/nvim-lspconfig'
-Plug 'mattn/emmet-vim'
-Plug 'kabouzeid/nvim-lspinstall'
-Plug 'jiangmiao/auto-pairs'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-buffer'
+Plug 'neovim/nvim-lspconfig' "LSP
+Plug 'mattn/emmet-vim' "HTML tags
+Plug 'kabouzeid/nvim-lspinstall' "new lsp installations
+Plug 'jiangmiao/auto-pairs' "close brackets
+Plug 'hrsh7th/cmp-nvim-lsp' "lsp completion
+Plug 'hrsh7th/cmp-buffer' 
 Plug 'hrsh7th/nvim-cmp'
+Plug 'airblade/vim-gitgutter' "git 
+Plug 'jremmen/vim-ripgrep' "ripgrep
+Plug 'junegunn/fzf.vim' "fzf
+Plug 'folke/lsp-trouble.nvim' "lsp diagnostic
 Plug 'kyazdani42/nvim-web-devicons'
-Plug 'folke/lsp-trouble.nvim'
-Plug 'airblade/vim-gitgutter'
+
+let g:gitgutter_max_signs = -1
+let g:user_emmet_leader_key=','
 call plug#end()
 
+syntax on
 set nocompatible
 set encoding=utf-8
 set showmatch
-set cursorline
+set ruler
 set number
 set ignorecase
 set smartcase
 set hidden
-set title
-let python_highlight_all = 1 
-syntax on
-
 set cmdheight=2
 set updatetime=300
 set shortmess+=c
 set signcolumn=number
 set completeopt=menuone,noinsert,noselect
-
-" Explore root folder as current one
-set autochdir
-
-" No backup
 set nobackup
 set nowritebackup
-
-" Wildmode
 set wildmode=longest,list,full
 set wildmenu
-
-" Wildignore
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip     " MacOSX/Linux
-
-" Tab size
 set tabstop=2
 set softtabstop=2
 set shiftwidth=2
-
-let mapleader=","
-let g:user_emmet_leader_key=','
-let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
-let g:gitgutter_max_signs = -1
-
-" Split navigations
-nnoremap <C-J> <C-W><C-J>
-nnoremap <C-K> <C-W><C-K>
-nnoremap <C-L> <C-W><C-L>
-nnoremap <C-H> <C-W><C-H>
 set splitbelow
 set splitright
 
+let mapleader=","
+let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
 
-let g:completion_confirm_key = ""
-imap <expr> <cr>  pumvisible() ? complete_info()["selected"] != "-1" ?
-			\ "\<Plug>(completion_confirm_completion)"  : "\<c-e>\<CR>" :  "\<CR>"
+au BufEnter * silent! lcd %:p:h
+
+" == MAPS ==
+nmap <C-J> <C-W><C-J>
+nmap <C-K> <C-W><C-K>
+nmap <C-L> <C-W><C-L>
+nmap <C-H> <C-W><C-H>
+nmap <C-p> :Rg 
+nmap ]h <Plug>(GitGutterNextHunk)
+nmap [h <Plug>(GitGutterPrevHunk)
 
 " == FILETYPE CONF ==
-
 au BufNewFile,BufRead *.py
 			\set tabstop=4
 			\set softtabstop=4
@@ -83,39 +71,12 @@ au BufNewFile,BufRead *.js, *.html, *.css
 			\set shiftwidth=2
 
 lua << EOF
-vim.api.nvim_set_keymap("n", "<leader>xx", "<cmd>LspTroubleToggle<cr>",
-  {silent = true, noremap = true}
-)
-vim.api.nvim_set_keymap("n", "<leader>xw", "<cmd>LspTroubleToggle lsp_workspace_diagnostics<cr>",
-  {silent = true, noremap = true}
-)
-vim.api.nvim_set_keymap("n", "<leader>xd", "<cmd>LspTroubleToggle lsp_document_diagnostics<cr>",
-  {silent = true, noremap = true}
-)
-vim.api.nvim_set_keymap("n", "<leader>xl", "<cmd>LspTroubleToggle loclist<cr>",
-  {silent = true, noremap = true}
-)
-vim.api.nvim_set_keymap("n", "<leader>xq", "<cmd>LspTroubleToggle quickfix<cr>",
-  {silent = true, noremap = true}
-)
-vim.api.nvim_set_keymap("n", "gR", "<cmd>LspTrouble lsp_references<cr>",
-  {silent = true, noremap = true}
-)
-
 local nvim_lsp = require('lspconfig')
-
 local cmp = require('cmp')
 cmp.setup({
 	snippet = {
 		expand = function(args)
-		-- For `vsnip` user.
 		vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` user.
-	
-		-- For `luasnip` user.
-		-- require('luasnip').lsp_expand(args.body)
-	
-		-- For `ultisnips` user.
-		-- vim.fn["vsnip#anonymous"](args.body)
 	end,
 	},
 	mapping = {
@@ -127,33 +88,10 @@ cmp.setup({
 		},
 	sources = {
 		{ name = 'nvim_lsp' },
-
-		-- For vsnip user.
 		{ name = 'vsnip' },
-
-		-- For luasnip user.
-		-- { name = 'luasnip' },
-
-		-- For ultisnips user.
-		-- { name = 'ultisnips' },
-
 		{ name = 'buffer' },
 		}
 	})
-	
-  require("trouble").setup {
-    fold_open = "v", -- icon used for open folds
-    fold_closed = ">", -- icon used for closed folds
-    indent_lines = false, -- add an indent guide below the fold icons
-    signs = {
-        -- icons / text used for a diagnostic
-        error = "error",
-        warning = "warn",
-        hint = "hint",
-        information = "info"
-    },
-    use_lsp_diagnostic_signs = false -- enabling this will use the signs defined in your lsp client
-		}
   
 	local on_attach = function(client, bufnr)
 	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
@@ -169,9 +107,9 @@ cmp.setup({
 	buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
 	buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
 	buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-	buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
-	buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
-	buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+--	buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<cr>', opts)
+--	buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+--	buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
 	buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
 	buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
 	buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
@@ -184,8 +122,6 @@ cmp.setup({
 
 end
 
--- Use a loop to conveniently call 'setup' on multiple servers and
--- map buffer local keybindings when the language server attaches
 require'lspinstall'.setup()
 local servers = require('lspinstall').installed_servers()
 for _, lsp in ipairs(servers) do
