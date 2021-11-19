@@ -38,7 +38,6 @@
 (global-linum-mode t)
 (global-visual-line-mode t)
 (show-paren-mode t)
-(setq inhibit-startup-screen t)
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
 (tool-bar-mode -1)
@@ -48,6 +47,8 @@
 
 (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 1024 1024))
+(setq next-line-add-newlines t)
+(setq inhibit-startup-screen t)
 
 (global-set-key "\M-f" 'forward-to-word)
 (global-set-key (kbd "C-c <left>")  'windmove-left)
@@ -248,11 +249,9 @@
 	(setq sml/theme 'respectful))
 (smart-mode-line-enable)
 
-(when (display-graphic-p)
-  (require 'all-the-icons))
-;; or
 (use-package all-the-icons
-  :if (display-graphic-p))
+  :if (display-graphic-p)
+	:ensure t)
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode)
