@@ -18,7 +18,7 @@
 		("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
  '(package-selected-packages
 	 (quote
-		(doom-modeline command-log-mode dired rainbow-delimiters dired-single all-the-icons-dired all-the-icons org-brain smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package)))
+		(helm-projectile-rg eterm-256color doom-modeline command-log-mode dired rainbow-delimiters dired-single all-the-icons-dired all-the-icons org-brain smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#b2b2b2" . "#292b2e")))
  '(tetris-x-colors
 	 [[229 192 123]
@@ -33,7 +33,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(line-number ((t (:inherit default)))))
+ '(line-number ((t (:inherit default))))
+ '(linum ((t (:inherit default :background "#292b2e" :foreground "#44505c")))))
 
 (global-linum-mode t)
 (global-visual-line-mode t)
@@ -49,8 +50,9 @@
 (setq read-process-output-max (* 1024 1024))
 (setq next-line-add-newlines t)
 (setq inhibit-startup-screen t)
+(setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
 
-(global-set-key "\M-f" 'forward-to-word)
+(global-set-key [f5] 'custom-kill-buffer-fn)
 (global-set-key (kbd "C-c <left>")  'windmove-left)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
 (global-set-key (kbd "C-c <up>")    'windmove-up)
@@ -114,17 +116,10 @@
 	(lsp lsp-deferred)
   :ensure t)
 
-;; (use-package lsp-ui
-;;   :commands
-;; 	lsp-ui-mode
-;; 	:config
-;; 	(setq lsp-ui-sideline-show-diagnostics t)
-;; 	(setq lsp-ui-sideline-show-symbol nil)
-;; 	:hook (lsp-mode-hook . lsp-ui-mode)
-;;   :ensure t)
-
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
+	:config ((setq lsp-ui-sideline-show-diagnostics t)
+					 (setq lsp-ui-sideline-show-symbol nil))
   :custom
   (lsp-ui-doc-position 'bottom))
 
@@ -209,19 +204,22 @@
 									(org-level-7 . 1.1)
 									(org-level-8 . 1.1))))
 
-(require 'org-indent)
-(set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
-(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
-(set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
-(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
+	(require 'org-indent)
+	(set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+	(set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+	(set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
+	(set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+	(set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+	(set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+	(set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
 
 (use-package npm-mode
 	:ensure t)
 
 (use-package helm-projectile
+	:ensure t)
+
+(use-package helm-rg
 	:ensure t)
 
 (use-package projectile
@@ -231,6 +229,8 @@
 	(projectile . lsp-dired-mode)
 	:init
 	(helm-projectile-on)
+	:bind (("<f6>" . helm-projectile-find-file)
+				 ("<f7>" . helm-projectile-rg))
 	:ensure t)
 (projectile-mode +1)
 
@@ -266,7 +266,8 @@
 (use-package dired
   :ensure nil
   :commands (dired dired-jump)
-	:bind (("C-x C-j" . dired-jump))
+	:bind (("<f9>" . lsp-dired-mode)
+				 ("C-x C-j" . dired-jump))
 	:config (put 'dired-find-alternate-file 'disabled nil)
   :custom ((dired-listing-switches "-agho --group-directories-first")))
 
@@ -282,7 +283,12 @@
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
 
-;; Functions
+(use-package eterm-256color
+  :hook (term-mode . eterm-256color-mode)
+	:ensure t)
+
+;; ===== Functions =====
+
 (defun npm-start()
 	(interactive)
 	(npm-mode--exec-process "npm start"))
@@ -290,10 +296,6 @@
 
 
 (defun custom-kill-buffer-fn (&optional arg)
-"When called with a prefix argument -- i.e., C-u -- kill all interesting
-buffers -- i.e., all buffers without a leading space in the buffer-name.
-When called without a prefix argument, kill just the current buffer
--- i.e., interesting or uninteresting."
 (interactive "P")
   (cond
     ((and (consp arg) (equal arg '(4)))
@@ -301,11 +303,13 @@ When called without a prefix argument, kill just the current buffer
         (lambda (x)
           (let ((name (buffer-name x)))
             (unless (eq ?\s (aref name 0))
-              (kill-buffer x))))
+              (kill-buffer x)
+							(delete-window))))
         (buffer-list)))
     (t
-      (kill-buffer (current-buffer)))))
+		 (kill-buffer (current-buffer))
+		 (delete-window))))
 
-(global-set-key [f5] 'custom-kill-buffer-fn)
+
 
 (setq gc-cons-threshold (* 2 1000 1000))
