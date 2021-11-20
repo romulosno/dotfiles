@@ -45,7 +45,7 @@
 (electric-pair-mode 1)
 (desktop-save-mode 1)
 
-(setq gc-cons-threshold 100000000)
+(setq gc-cons-threshold (* 50 1000 1000))
 (setq read-process-output-max (* 1024 1024))
 (setq next-line-add-newlines t)
 (setq inhibit-startup-screen t)
@@ -86,8 +86,9 @@
 (use-package company
 	:config
 	(setq company-minimum-prefix-length 1)
+	(add-hook 'after-init-hook 'global-company-mode)
 	:ensure t)
-(add-hook 'after-init-hook 'global-company-mode)
+
 (use-package dap-mode
   :ensure t)
 
@@ -113,15 +114,19 @@
 	(lsp lsp-deferred)
   :ensure t)
 
+;; (use-package lsp-ui
+;;   :commands
+;; 	lsp-ui-mode
+;; 	:config
+;; 	(setq lsp-ui-sideline-show-diagnostics t)
+;; 	(setq lsp-ui-sideline-show-symbol nil)
+;; 	:hook (lsp-mode-hook . lsp-ui-mode)
+;;   :ensure t)
+
 (use-package lsp-ui
-  :commands
-	lsp-ui-mode
-	lsp-ui-si
-	:config
-	(setq lsp-ui-sideline-show-diagnostics t)
-	(setq lsp-ui-sideline-show-symbol nil)
-	:hook (lsp-mode-hook . lsp-ui-mode)
-  :ensure t)
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
 
 (use-package lsp-treemacs
 	:config
@@ -202,12 +207,9 @@
 									(org-level-5 . 1.1)
 									(org-level-6 . 1.1)
 									(org-level-7 . 1.1)
-									(org-level-8 . 1.1)))
-		(set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
-;; Make sure org-indent face is available
-(require 'org-indent)
+									(org-level-8 . 1.1))))
 
-;; Ensure that anything that should be fixed-pitch in Org files appears that way
+(require 'org-indent)
 (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
 (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
 (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
@@ -284,7 +286,4 @@
 	(interactive)
 	(npm-mode--exec-process "npm start"))
 
-
-
-
-
+(setq gc-cons-threshold (* 2 1000 1000))
