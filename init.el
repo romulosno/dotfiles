@@ -163,7 +163,7 @@
   (setq-default js-indent-level 2)
   (setq tab-width 2)
   :ensure t)
-(put 'dired-find-alternate-file 'disabled nil)
+
 
 (use-package emmet-mode
 	:config
@@ -267,6 +267,7 @@
   :ensure nil
   :commands (dired dired-jump)
 	:bind (("C-x C-j" . dired-jump))
+	:config (put 'dired-find-alternate-file 'disabled nil)
   :custom ((dired-listing-switches "-agho --group-directories-first")))
 
 (use-package dired-single
@@ -285,5 +286,26 @@
 (defun npm-start()
 	(interactive)
 	(npm-mode--exec-process "npm start"))
+
+
+
+(defun custom-kill-buffer-fn (&optional arg)
+"When called with a prefix argument -- i.e., C-u -- kill all interesting
+buffers -- i.e., all buffers without a leading space in the buffer-name.
+When called without a prefix argument, kill just the current buffer
+-- i.e., interesting or uninteresting."
+(interactive "P")
+  (cond
+    ((and (consp arg) (equal arg '(4)))
+      (mapc
+        (lambda (x)
+          (let ((name (buffer-name x)))
+            (unless (eq ?\s (aref name 0))
+              (kill-buffer x))))
+        (buffer-list)))
+    (t
+      (kill-buffer (current-buffer)))))
+
+(global-set-key [f5] 'custom-kill-buffer-fn)
 
 (setq gc-cons-threshold (* 2 1000 1000))
