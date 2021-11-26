@@ -18,7 +18,7 @@
 		("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
  '(package-selected-packages
 	 (quote
-		(helm-projectile-rg eterm-256color doom-modeline command-log-mode dired rainbow-delimiters dired-single all-the-icons-dired all-the-icons org-brain smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package)))
+		(dart-mode evil-magit evil-collection evil helm-projectile-rg doom-modeline command-log-mode dired rainbow-delimiters dired-single all-the-icons-dired all-the-icons org-brain smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#b2b2b2" . "#292b2e")))
  '(tetris-x-colors
 	 [[229 192 123]
@@ -44,7 +44,6 @@
 (tool-bar-mode -1)
 (visual-line-mode 1)
 (electric-pair-mode 1)
-(desktop-save-mode 1)
 
 (setq gc-cons-threshold (* 50 1000 1000))
 (setq read-process-output-max (* 1024 1024))
@@ -235,6 +234,8 @@
 (projectile-mode +1)
 
 (use-package magit
+	 :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
 	:ensure t)
 
 (use-package flymake
@@ -283,9 +284,6 @@
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
 
-(use-package eterm-256color
-  :hook (term-mode . eterm-256color-mode)
-	:ensure t)
 
 ;; ===== Functions =====
 
@@ -304,12 +302,13 @@
           (let ((name (buffer-name x)))
             (unless (eq ?\s (aref name 0))
               (kill-buffer x)
-							(delete-window))))
+							(if (> (length (mapcar #'window-buffer (window-list))) 1)
+								(delete-window)))))
         (buffer-list)))
     (t
 		 (kill-buffer (current-buffer))
-		 (delete-window))))
-
-
+		 (if (> (length (mapcar #'window-buffer (window-list))) 1)
+			 (delete-window)))))
 
 (setq gc-cons-threshold (* 2 1000 1000))
+
