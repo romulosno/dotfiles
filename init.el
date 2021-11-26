@@ -18,7 +18,7 @@
 		("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
  '(package-selected-packages
 	 (quote
-		(dart-mode evil-magit evil-collection evil helm-projectile-rg doom-modeline command-log-mode dired rainbow-delimiters dired-single all-the-icons-dired all-the-icons org-brain smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package)))
+		(imenu-anywhere dart-mode evil-magit evil-collection evil helm-projectile-rg doom-modeline command-log-mode dired rainbow-delimiters dired-single all-the-icons-dired all-the-icons org-brain smart-mode-line-atom-one-dark-theme smart-mode-line: atom-one-dark smart-mode-line atom-one-dark-theme zenburn-theme org-mind-map helm-rg evil-mode lsp-ui-peek-mode lsp-ui-peek magit maggit helm-projectile helm projectile ## spacemacs-dark org-mode spacemacs-theme npm-mode lsp-dart emmet-mode which-key js2-mode js-mode typescript-mode yasnippet dap-mode lsp-treemacs lsp-ui flycheck company lsp-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#b2b2b2" . "#292b2e")))
  '(tetris-x-colors
 	 [[229 192 123]
@@ -61,6 +61,10 @@
 
 (define-key global-map [remap forward-word] 'forward-to-word)
 
+(eval-when-compile
+  (defvar use-package-enable-imenu-support t)
+  (require 'use-package))
+
 (use-package helm
 	:config
 	(define-key global-map [remap find-file] 'helm-find-files)
@@ -69,6 +73,7 @@
 	(define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
 	(define-key global-map [remap execute-extended-command] 'helm-M-x)
 	(define-key global-map [remap apropos-command] 'helm-apropos)
+	(define-key global-map [remap imenu-anywhere] 'helm-imenu-anywhere)
 	:ensure t)
 
 (use-package spacemacs-theme
@@ -99,7 +104,6 @@
   (setq lsp-idle-delay 0.500)
 	(setq lsp-lens-enable t)
 	(setq lsp-signature-auto-activate nil)
-	(add-hook 'lsp-mode-hook 'lsp-ui-mode)
   :config 
   (define-key lsp-mode-map (kbd "C-l") lsp-command-map)
   :hook (
@@ -284,6 +288,10 @@
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
 
+(use-package imenu-anywhere
+	:config
+	(global-set-key (kbd "C-.") 'imenu-anywhere)
+	:ensure t)
 
 ;; ===== Functions =====
 
