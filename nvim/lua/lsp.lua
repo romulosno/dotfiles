@@ -4,32 +4,11 @@ refactor.setup({})
 
 -- telescope refactoring helper
 local function refactor(prompt_bufnr)
-    local content = require("telescope.actions.state").get_selected_entry(
-        prompt_bufnr
-    )
-    require("telescope.actions").close(prompt_bufnr)
-    require("refactoring").refactor(content.value)
-end
--- NOTE: M is a global object
--- for the sake of simplicity in this example
--- you can extract this function and the helper above
--- and then require the file and call the extracted function
--- in the mappings below
-M = {}
-M.refactors = function()
-    local opts = require("telescope.themes").get_cursor() -- set personal telescope options
-    require("telescope.pickers").new(opts, {
-        prompt_title = "refactors",
-        finder = require("telescope.finders").new_table({
-            results = require("refactoring").get_refactors(),
-        }),
-        sorter = require("telescope.config").values.generic_sorter(opts),
-        attach_mappings = function(_, map)
-            map("i", "<CR>", refactor)
-            map("n", "<CR>", refactor)
-            return true
-        end
-    }):find()
+	local content = require("telescope.actions.state").get_selected_entry(
+	prompt_bufnr
+	)
+	require("telescope.actions").close(prompt_bufnr)
+	require("refactoring").refactor(content.value)
 end
 
 vim.api.nvim_set_keymap("v", "<Leader>re", [[ <Esc><Cmd>lua require('refactoring').refactor('Extract Function')<CR>]], {noremap = true, silent = true, expr = false})
@@ -40,8 +19,8 @@ local cmp = require('cmp')
 cmp.setup({
 	snippet = {
 		expand = function(args)
-		vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` user.
-	end,
+			vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` user.
+		end,
 	},
 	mapping = {
 		['<C-d>'] = cmp.mapping.scroll_docs(-4),
@@ -49,15 +28,15 @@ cmp.setup({
 		['<C-Space>'] = cmp.mapping.complete(),
 		['<C-e>'] = cmp.mapping.close(),
 		['<CR>'] = cmp.mapping.confirm({ select = true }),
-		},
+	},
 	sources = {
 		{ name = 'nvim_lsp' },
 		{ name = 'vsnip' },
 		{ name = 'buffer' },
-		}
-	})
-  
-	local on_attach = function(client, bufnr)
+	}
+})
+
+local on_attach = function(client, bufnr)
 	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
 	local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
@@ -83,14 +62,9 @@ cmp.setup({
 
 end
 
-require'lspinstall'.setup()
-local servers = require('lspinstall').installed_servers()
-for _, lsp in ipairs(servers) do
-	nvim_lsp[lsp].setup {
-		on_attach = on_attach,
-		flags = {
-			debounce_text_changes = 150,
-			},
-		capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-		}
-end
+local lsp_installer = require("nvim-lsp-installer")
+lsp_installer.on_server_ready(function(server)
+	local opts = {}
+	server:setup(opts)
+end)
+

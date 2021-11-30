@@ -20,7 +20,10 @@ local use = require('packer').use
 require('packer').startup(function()
 	use 'wbthomason/packer.nvim' -- Package manager
 	use 'tpope/vim-commentary' -- "gc" to comment visual regions/lines
-	use 'neovim/nvim-lspconfig' -- use a language server
+	use {
+		'neovim/nvim-lspconfig', 
+    'williamboman/nvim-lsp-installer',
+	}
 	use 'hrsh7th/cmp-nvim-lsp'
 	use 'hrsh7th/cmp-buffer'
 	use 'hrsh7th/nvim-cmp' -- for completion whilst using the language server
@@ -31,7 +34,6 @@ require('packer').startup(function()
 	use 'nvim-lua/popup.nvim'
 	use 'mattn/emmet-vim' 
 	use 'folke/which-key.nvim'
-	use 'kabouzeid/nvim-lspinstall' 
 	use 'jiangmiao/auto-pairs' 
 	use 'junegunn/fzf'
 	use 'junegunn/fzf.vim' 
@@ -42,6 +44,7 @@ require('packer').startup(function()
         {"nvim-treesitter/nvim-treesitter"}
     }
 	}
+	use 'fatih/vim-go'
 end)
 
 vim.g.mapleader = ','
