@@ -38,7 +38,9 @@
 (setq ivy-use-virtual-buffers t)
 (setq enable-recursive-minibuffers t)
 (add-hook 'after-init-hook 'global-company-mode)
+(put 'dired-find-alternate-file 'disabled nil)
 
+;; Keybindings
 (global-set-key [f5] 'custom-kill-buffer-fn)
 (global-set-key (kbd "C-c <left>")  'windmove-left)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
@@ -53,6 +55,7 @@
 (define-key global-map [remap forward-word] 'forward-to-word)
 (define-key global-map [remap isearch-forward] 'swiper)
 
+;; Packages
 (with-eval-after-load 'ido
   (setq ido-enable-flex-matching t)
   (setq ido-everywhere t)
@@ -96,9 +99,6 @@
   (setq lsp-ui-sideline-show-symbol nil)
   (lsp-ui-doc-position 'bottom))
 
-(with-eval-after-load 'lsp-treemacs
-  (local-set-key (kbd "C-l T v") 'lsp-treemacs-symbols))
-
 (with-eval-after-load 'which-key
   (setq which-key-idle-delay 0.3))
 
@@ -119,6 +119,7 @@
 
 (with-eval-after-load 'flymake
   (flymake-show-diagnostic))
+
 ;; ===== Functions =====
 
 (defun dw/org-mode-setup ()
@@ -148,8 +149,22 @@
     (kill-buffer (current-buffer))
     (if (> (length (mapcar #'window-buffer (window-list))) 1)
 	(delete-window)))))
-(put 'dired-find-alternate-file 'disabled nil)
 
+
+;; ===== Modes =====
+(projectile-mode 1)
+(doom-modeline-mode 1)
+(show-paren-mode t)
+(menu-bar-mode -1)
+(toggle-scroll-bar -1)
+(tool-bar-mode -1)
+(visual-line-mode 1)
+(electric-pair-mode 1)
+(ivy-mode 1)
+(counsel-mode 1)
+(ido-mode 1)
+(which-key-mode)
+(global-linum-mode)
 
 (custom-set-variables
  '(ansi-color-faces-vector
@@ -165,19 +180,3 @@
    (quote
     (which-key))))
 (custom-set-faces )
-
-(projectile-mode 1)
-(lsp-treemacs-sync-mode 1)
-(doom-modeline-mode 1)
-					;(global-visual-line-mode t)							
-(show-paren-mode t)
-(menu-bar-mode -1)
-(toggle-scroll-bar -1)
-(tool-bar-mode -1)
-(visual-line-mode 1)
-(electric-pair-mode 1)
-(ivy-mode 1)
-(counsel-mode 1)
-(ido-mode 1)
-(which-key-mode)
-(global-linum-mode)
