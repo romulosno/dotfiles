@@ -1,19 +1,25 @@
+;;; init.el --- Arquivo de configuração do Emacs
+;;; Commentary:
+;; Configuração inicial do Emacs
+
+;;; Code:
 (setq gc-cons-threshold most-positive-fixnum)
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
-        ("marmalade" . "http://marmalade-repo.org/packages/")
         ("melpa" . "http://melpa.org/packages/")))
-(require 'package)
 
+
+
+(require 'package)
 (package-initialize)
-(setq my-packages
+(setq-default my-packages
       '( company
 	 counsel
 	 counsel-projectile
 	 dap-mode
 	 ivy
 	 lsp-ui
-	 lsp
+	 lsp-mode
 	 npm-mode
 	 projectile
 	 scss-mode
@@ -21,27 +27,31 @@
 	 which-key
 	 org
 	 emmet-mode
-	 flymake
+	 flycheck
 	 imenu-anywhere
 	 ))
 
-(dolist (pkg my-packages)
-  (unless (package-installed-p pkg)
-    (package-install pkg)))
+(defun do-setup ()
+  "Realiza o setup inicial do Emacs."
+  (when (not package-archive-contents)
+    (package-refresh-contents))
+  (dolist (pkg 'my-packages)
+    (unless (package-installed-p pkg)
+      (package-install pkg))))
+(do-setup)
 
-
-
-(setq read-process-output-max (* 1024 1024))
 (setq next-line-add-newlines t)
 (setq inhibit-startup-screen t)
 (setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
-(setq ivy-use-virtual-buffers t)
 (setq enable-recursive-minibuffers t)
-(add-hook 'after-init-hook 'global-company-mode)
+
+(add-hook 'after-init-hook #'global-company-mode)
+(add-hook 'after-init-hook #'global-flycheck-mode)
+
 (put 'dired-find-alternate-file 'disabled nil)
 
 ;; Keybindings
-(global-set-key [f5] 'custom-kill-buffer-fn)
+(global-set-key [f5] 'kill-buffer-fn)
 (global-set-key (kbd "C-c <left>")  'windmove-left)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
 (global-set-key (kbd "C-c <up>")    'windmove-up)
@@ -56,87 +66,84 @@
 (define-key global-map [remap isearch-forward] 'swiper)
 
 ;; Packages
-(with-eval-after-load 'ido
-  (setq ido-enable-flex-matching t)
-  (setq ido-everywhere t)
-  (setq ido-use-filename-at-point 'guess))
-
 (with-eval-after-load 'company
-  (setq company-minimum-prefix-length 1))
+  (setq-default company-minimum-prefix-length 1))
 
 (with-eval-after-load 'typescript-mode
   (setq-default typescript-indent-level 2)
   (setq-default tab-width 2)
-  (add-hook 'typescript-mode-hook (lambda() (lsp-deferred))))
+  (add-hook 'typescript-mode-hook #'lsp))
 
 (with-eval-after-load 'js-mode
   (setq-default js-indent-level 2)
   (setq tab-width 2)
-
-  (add-hook 'js-mode-hook (lambda() (lsp-deferred))))
+  (add-hook 'js-mode-hook #'lsp))
 
 (with-eval-after-load 'scss-mode
-  (add-hook 'scss-mode-hook (lambda() (lsp-deferred))))
+  (add-hook 'scss-mode-hook #'lsp))
 
 (with-eval-after-load 'lsp
-  (setq lsp-keymap-prefix "C-l")
-  (setq lsp-idle-delay 0.500)
-  (setq lsp-lens-enable t)
-  (setq lsp-signature-auto-activate nil)
-  (define-key lsp-mode-map (kbd "C-l") 'lsp-command-map)
-  (add-hook 'lsp-deferred-hook 'lsp-ui)
-  (add-hook 'lsp-deferred-hook 'lsp-enable-which-key-integration)
-  (add-hook 'lsp-deferred-hook 'dap-mode))
+  (setq-default lsp-keymap-prefix "C-c l")
+  (setq-default lsp-idle-delay 0.500)
+  (setq-default lsp-lens-enable t)
+  (setq-default lsp-signature-auto-activate nil)
+  (define-key 'lsp-mode-map (kbd "C-c l") 'lsp-command-map)
+  (add-hook 'lsp-mode-hook 'lsp-ui)
+  (add-hook 'lsp-mode-hook 'lsp-enable-which-key-integration)
+  (add-hook 'lsp-mode-hook 'dap-mode))
+(add-hook 'lsp-mode-hook (lambda () (lsp-enable-which-key-integration)))
+
+(with-eval-after-load 'lsp-ui
+  (setq-default lsp-ui-doc-position 'bottom)
+  (setq-default lsp-ui-sideline-show-diagnostics t)
+  (setq-default lsp-ui-sideline-show-symbol nil))
+
 
 (with-eval-after-load 'projectile
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  (define-key counsel-mode-map (kbd "<f6>") 'counsel-projectile-find-file)
-  (define-key counsel-mode-map (kbd "<f7>") 'counsel-projectile-rg)
-  (add-hook 'projectile-hook 'lsp-dired-mode))
-
-(with-eval-after-load lsp-ui
-  (setq lsp-ui-sideline-show-diagnostics t)
-  (setq lsp-ui-sideline-show-symbol nil)
-  (lsp-ui-doc-position 'bottom))
+  (define-key 'projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (add-hook 'projectile-hook 'lsp-dired-mode)
+  (add-hook 'projectile-hook 'counsel-projectile-mode))
 
 (with-eval-after-load 'which-key
-  (setq which-key-idle-delay 0.3))
+  (setq-default which-key-idle-delay 0.3))
 
 (with-eval-after-load 'term
-  (setq explicit-shell-file-name "bash")
-  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+  (setq-default explicit-shell-file-name "bash")
+  (setq-default term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 
 (with-eval-after-load 'org
   (add-hook 'org-mode-hook 'dw/org-mode-setup)
-  (setq org-ellipsis " ▾"
-	org-hide-emphasis-markers t))
+  (setq-default org-ellipsis " ▾"
+		org-hide-emphasis-markers t))
 
 (with-eval-after-load 'emmet-mode
-  (setq emmet-move-cursor-between-quotes t))
+  (setq-default emmet-move-cursor-between-quotes t))
 
 (with-eval-after-load 'mhtml-mode
   (add-hook 'mhtml-mode-hook 'emmet-mode))
 
-(with-eval-after-load 'flymake
-  (flymake-show-diagnostic))
 
 ;; ===== Functions =====
 
 (defun dw/org-mode-setup ()
+  "ORG setup."
   (org-indent-mode)
   (variable-pitch-mode 1)
   (auto-fill-mode 0)
   (visual-line-mode 1)
-  (setq evil-auto-indent nil))
+  (setq-default evil-auto-indent nil))
 
 (defun npm-start()
+  "NPM run start."
   (interactive)
   (npm-mode--exec-process "npm start"))
 
-(defun custom-kill-buffer-fn (&optional arg)
+(defun kill-buffer-fn (&optional ARG)
+  "Kill buffer and close window.
+ARG teste."
   (interactive "P")
   (cond
-   ((and (consp arg) (equal arg '(4)))
+   ((and (consp ARG) (equal ARG '(4)))
     (mapc
      (lambda (x)
        (let ((name (buffer-name x)))
@@ -153,7 +160,6 @@
 
 ;; ===== Modes =====
 (projectile-mode 1)
-(doom-modeline-mode 1)
 (show-paren-mode t)
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
@@ -162,11 +168,14 @@
 (electric-pair-mode 1)
 (ivy-mode 1)
 (counsel-mode 1)
-(ido-mode 1)
 (which-key-mode)
 (global-linum-mode)
 
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
@@ -176,7 +185,14 @@
  '(custom-safe-themes
    (quote
     ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
- '(package-selected-packages
-   (quote
-    (which-key))))
-(custom-set-faces )
+ '(package-selected-packages (quote (flycheck typescript-mode which-key))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(provide 'init)
+
+;;; init.el ends here
