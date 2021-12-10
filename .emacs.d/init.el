@@ -8,36 +8,27 @@
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")))
 
-
-
 (require 'package)
 (package-initialize)
-(setq-default my-packages
-      '( company
-	 counsel
-	 counsel-projectile
-	 dap-mode
-	 ivy
-	 lsp-ui
-	 lsp-mode
-	 npm-mode
-	 projectile
-	 scss-mode
-	 smart-mode-line
-	 which-key
-	 org
-	 emmet-mode
-	 flycheck
-	 imenu-anywhere
-	 ))
-
-(defun do-setup ()
-  "Realiza o setup inicial do Emacs."
-  (when (not package-archive-contents)
-    (package-refresh-contents))
-  (dolist (pkg 'my-packages)
-    (unless (package-installed-p pkg)
-      (package-install pkg))))
+(setq my-packages
+      '( counsel
+				 counsel-projectile
+				 dap-mode
+				 emmet-mode
+				 flycheck
+				 imenu-anywhere
+				 ivy
+				 lsp-mode
+				 lsp-ui
+				 npm-mode
+				 org
+				 projectile
+				 scss-mode
+				 smart-mode-line
+				 typescript-mode
+				 which-key
+				 company
+				 ))
 (do-setup)
 
 (setq next-line-add-newlines t)
@@ -49,49 +40,34 @@
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
 (put 'dired-find-alternate-file 'disabled nil)
-
-;; Keybindings
-(global-set-key [f5] 'kill-buffer-fn)
-(global-set-key (kbd "C-c <left>")  'windmove-left)
-(global-set-key (kbd "C-c <right>") 'windmove-right)
-(global-set-key (kbd "C-c <up>")    'windmove-up)
-(global-set-key (kbd "C-c <down>")  'windmove-down)
-(global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
-(global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
-(global-set-key (kbd "C-c g") 'counsel-git)
-(global-set-key (kbd "C-c f") 'counsel-fzf)
-(global-set-key (kbd "C-c r") 'counsel-rg)
-(define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
-(define-key global-map [remap forward-word] 'forward-to-word)
-(define-key global-map [remap isearch-forward] 'swiper)
-
 ;; Packages
 (with-eval-after-load 'company
   (setq-default company-minimum-prefix-length 1))
 
 (with-eval-after-load 'typescript-mode
   (setq-default typescript-indent-level 2)
-  (setq-default tab-width 2)
-  (add-hook 'typescript-mode-hook #'lsp))
+  (setq-default tab-width 2))
+
 
 (with-eval-after-load 'js-mode
   (setq-default js-indent-level 2)
-  (setq tab-width 2)
-  (add-hook 'js-mode-hook #'lsp))
-
-(with-eval-after-load 'scss-mode
-  (add-hook 'scss-mode-hook #'lsp))
+  (setq tab-width 2))
 
 (with-eval-after-load 'lsp
   (setq-default lsp-keymap-prefix "C-c l")
   (setq-default lsp-idle-delay 0.500)
   (setq-default lsp-lens-enable t)
   (setq-default lsp-signature-auto-activate nil)
-  (define-key 'lsp-mode-map (kbd "C-c l") 'lsp-command-map)
-  (add-hook 'lsp-mode-hook 'lsp-ui)
-  (add-hook 'lsp-mode-hook 'lsp-enable-which-key-integration)
-  (add-hook 'lsp-mode-hook 'dap-mode))
+  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map))
+
+(add-hook 'lsp-mode-hook 'lsp-ui)
+(add-hook 'lsp-mode-hook 'lsp-enable-which-key-integration)
+(add-hook 'lsp-mode-hook 'dap-mode)
 (add-hook 'lsp-mode-hook (lambda () (lsp-enable-which-key-integration)))
+(add-hook 'typescript-mode-hook #'lsp)
+(add-hook 'js-mode-hook #'lsp)
+(add-hook 'scss-mode-hook #'lsp)
+
 
 (with-eval-after-load 'lsp-ui
   (setq-default lsp-ui-doc-position 'bottom)
@@ -100,9 +76,9 @@
 
 
 (with-eval-after-load 'projectile
-  (define-key 'projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  (add-hook 'projectile-hook 'lsp-dired-mode)
-  (add-hook 'projectile-hook 'counsel-projectile-mode))
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+(add-hook 'projectile-hook 'lsp-dired-mode)
+(add-hook 'projectile-hook 'counsel-projectile-mode)
 
 (with-eval-after-load 'which-key
   (setq-default which-key-idle-delay 0.3))
@@ -114,7 +90,7 @@
 (with-eval-after-load 'org
   (add-hook 'org-mode-hook 'dw/org-mode-setup)
   (setq-default org-ellipsis " ▾"
-		org-hide-emphasis-markers t))
+								org-hide-emphasis-markers t))
 
 (with-eval-after-load 'emmet-mode
   (setq-default emmet-move-cursor-between-quotes t))
@@ -123,7 +99,13 @@
   (add-hook 'mhtml-mode-hook 'emmet-mode))
 
 
-;; ===== Functions =====
+(defun do-setup ()
+  "Realiza o setup inicial do Emacs."
+  (when (not package-archive-contents)
+    (package-refresh-contents))
+  (dolist (pkg my-packages)
+    (unless (package-installed-p pkg)
+      (package-install pkg))))
 
 (defun dw/org-mode-setup ()
   "ORG setup."
@@ -147,15 +129,15 @@ ARG teste."
     (mapc
      (lambda (x)
        (let ((name (buffer-name x)))
-	 (unless (eq ?\s (aref name 0))
-	   (kill-buffer x)
-	   (if (> (length (mapcar #'window-buffer (window-list))) 1)
-	       (delete-window)))))
+				 (unless (eq ?\s (aref name 0))
+					 (kill-buffer x)
+					 (if (> (length (mapcar #'window-buffer (window-list))) 1)
+							 (delete-window)))))
      (buffer-list)))
    (t
     (kill-buffer (current-buffer))
     (if (> (length (mapcar #'window-buffer (window-list))) 1)
-	(delete-window)))))
+				(delete-window)))))
 
 
 ;; ===== Modes =====
@@ -193,6 +175,6 @@ ARG teste."
  ;; If there is more than one, they won't work right.
  )
 
-(provide 'init)
-
+(add-to-list 'load-path "~/lisp")
+(require 'keyb)
 ;;; init.el ends here
