@@ -8,28 +8,13 @@
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")))
 
+(add-to-list 'load-path "~/.emacs.d/lisp")
 (require 'package)
+(require 'keyb)
+(require 'rom)
 (package-initialize)
-(setq my-packages
-      '( counsel
-				 counsel-projectile
-				 dap-mode
-				 emmet-mode
-				 flycheck
-				 imenu-anywhere
-				 ivy
-				 lsp-mode
-				 lsp-ui
-				 npm-mode
-				 org
-				 projectile
-				 scss-mode
-				 smart-mode-line
-				 typescript-mode
-				 which-key
-				 company
-				 ))
-(do-setup)
+
+
 
 (setq next-line-add-newlines t)
 (setq inhibit-startup-screen t)
@@ -40,7 +25,8 @@
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
 (put 'dired-find-alternate-file 'disabled nil)
-;; Packages
+
+
 (with-eval-after-load 'company
   (setq-default company-minimum-prefix-length 1))
 
@@ -59,7 +45,6 @@
   (setq-default lsp-lens-enable t)
   (setq-default lsp-signature-auto-activate nil)
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map))
-
 (add-hook 'lsp-mode-hook 'lsp-ui)
 (add-hook 'lsp-mode-hook 'lsp-enable-which-key-integration)
 (add-hook 'lsp-mode-hook 'dap-mode)
@@ -74,7 +59,6 @@
   (setq-default lsp-ui-sideline-show-diagnostics t)
   (setq-default lsp-ui-sideline-show-symbol nil))
 
-
 (with-eval-after-load 'projectile
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 (add-hook 'projectile-hook 'lsp-dired-mode)
@@ -88,9 +72,9 @@
   (setq-default term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 
 (with-eval-after-load 'org
-  (add-hook 'org-mode-hook 'dw/org-mode-setup)
+  (add-hook 'org-mode-hook (lambda() (rom-org-setup)))
   (setq-default org-ellipsis " ▾"
-								org-hide-emphasis-markers t))
+		org-hide-emphasis-markers t))
 
 (with-eval-after-load 'emmet-mode
   (setq-default emmet-move-cursor-between-quotes t))
@@ -98,49 +82,7 @@
 (with-eval-after-load 'mhtml-mode
   (add-hook 'mhtml-mode-hook 'emmet-mode))
 
-
-(defun do-setup ()
-  "Realiza o setup inicial do Emacs."
-  (when (not package-archive-contents)
-    (package-refresh-contents))
-  (dolist (pkg my-packages)
-    (unless (package-installed-p pkg)
-      (package-install pkg))))
-
-(defun dw/org-mode-setup ()
-  "ORG setup."
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq-default evil-auto-indent nil))
-
-(defun npm-start()
-  "NPM run start."
-  (interactive)
-  (npm-mode--exec-process "npm start"))
-
-(defun kill-buffer-fn (&optional ARG)
-  "Kill buffer and close window.
-ARG teste."
-  (interactive "P")
-  (cond
-   ((and (consp ARG) (equal ARG '(4)))
-    (mapc
-     (lambda (x)
-       (let ((name (buffer-name x)))
-				 (unless (eq ?\s (aref name 0))
-					 (kill-buffer x)
-					 (if (> (length (mapcar #'window-buffer (window-list))) 1)
-							 (delete-window)))))
-     (buffer-list)))
-   (t
-    (kill-buffer (current-buffer))
-    (if (> (length (mapcar #'window-buffer (window-list))) 1)
-				(delete-window)))))
-
-
-;; ===== Modes =====
+(rom-setup)
 (projectile-mode 1)
 (show-paren-mode t)
 (menu-bar-mode -1)
@@ -154,10 +96,6 @@ ARG teste."
 (global-linum-mode)
 
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
@@ -168,13 +106,7 @@ ARG teste."
    (quote
     ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
  '(package-selected-packages (quote (flycheck typescript-mode which-key))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(custom-set-faces )
 
-(add-to-list 'load-path "~/lisp")
-(require 'keyb)
+
 ;;; init.el ends here
