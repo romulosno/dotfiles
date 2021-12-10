@@ -6,28 +6,30 @@
 ;;; Code:
 
 (setq-default my-packages
-      '( counsel
-	 counsel-projectile
-	 dap-mode
-	 emmet-mode
-	 flycheck
-	 imenu-anywhere
-	 ivy
-	 lsp-mode
-	 lsp-ui
-	 npm-mode
-	 org
-	 projectile
-	 scss-mode
-	 smart-mode-line
-	 typescript-mode
-	 which-key
-	 company
-	 ))
+	      '( counsel
+		 counsel-projectile
+		 dap-mode
+		 emmet-mode
+		 flycheck
+		 imenu-anywhere
+		 ivy
+		 lsp-mode
+		 lsp-ui
+		 npm-mode
+		 org
+		 projectile
+		 scss-mode
+		 smart-mode-line
+		 typescript-mode
+		 which-key
+		 company
+		 ))
+
 
 
 (defun rom-setup ()
   "Realiza o setup inicial do Emacs."
+  (interactive)
   (when (not package-archive-contents)
     (package-refresh-contents))
   (dolist (pkg my-packages)
@@ -35,13 +37,18 @@
       (package-install pkg))))
 
 
+
 (defun rom-org-setup ()
   "ORG setup."
-  (org-indent-mode)
   (variable-pitch-mode 1)
   (auto-fill-mode 0)
   (visual-line-mode 1)
-  (setq-default evil-auto-indent nil))
+  (setq-default org-ellipsis " ▾"
+		org-hide-emphasis-markers t)
+  (setq-default evil-auto-indent nil)
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))))
 
 (defun rom-kill-close (&optional ARG)
   "Kill buffer and close window.
@@ -62,6 +69,10 @@ ARG interactive."
     (if (> (length (mapcar #'window-buffer (window-list))) 1)
 	(delete-window)))))
 
-(provide 'rom)
+(defun rom-indent-file ()
+  "Indenta todo arquivo e se mantem a mesma linha."
+  (interactive)
+  (indent-region (point-min) (point-max)))
 
+(provide 'rom)
 ;;; rom.el ends here

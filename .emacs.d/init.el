@@ -72,9 +72,7 @@
   (setq-default term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 
 (with-eval-after-load 'org
-  (add-hook 'org-mode-hook (lambda() (rom-org-setup)))
-  (setq-default org-ellipsis " ▾"
-		org-hide-emphasis-markers t))
+  (add-hook 'org-mode-hook (lambda() (rom-org-setup))))
 
 (with-eval-after-load 'emmet-mode
   (setq-default emmet-move-cursor-between-quotes t))
@@ -96,6 +94,10 @@
 (global-linum-mode)
 
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
@@ -106,7 +108,12 @@
    (quote
     ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
  '(package-selected-packages (quote (flycheck typescript-mode which-key))))
-(custom-set-faces )
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
 
 ;;; init.el ends here
