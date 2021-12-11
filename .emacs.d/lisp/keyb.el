@@ -5,7 +5,7 @@
 
 ;;; Code:
 
-(global-set-key [f5] 'kill-buffer-fn)
+(global-set-key [f5] 'rom-kill-close)
 (global-set-key (kbd "C-c <left>")  'windmove-left)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
 (global-set-key (kbd "C-c <up>")    'windmove-up)

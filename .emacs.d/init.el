@@ -32,35 +32,41 @@
 
 (with-eval-after-load 'typescript-mode
   (setq-default typescript-indent-level 2)
-  (setq tab-width 2))
+  (setq-default tab-width 2))
 
 
 (with-eval-after-load 'js-mode
   (setq-default js-indent-level 2)
-  (setq tab-width 2))
+  (setq-default tab-width 2))
 
 (with-eval-after-load 'lsp
-  (setq lsp-keymap-prefix "C-c l")
   (setq lsp-idle-delay 0.500)
   (setq lsp-lens-enable t)
-  (setq lsp-signature-auto-activate nil)
-  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map))
-(add-hook 'lsp-mode-hook 'lsp-ui)
+  (setq lsp-signature-auto-activate nil))
+(add-hook 'lsp-before-initialize-hook (lambda ()
+					(setq lsp-keymap-prefix "C-l")
+					(define-key lsp-mode-map (kbd "C-l") lsp-command-map)))
+(add-hook 'lsp-mode-hook 'lsp-ui-mode)
 (add-hook 'lsp-mode-hook 'lsp-enable-which-key-integration)
 (add-hook 'lsp-mode-hook 'dap-mode)
-(add-hook 'lsp-mode-hook (lambda () (lsp-enable-which-key-integration)))
-(add-hook 'typescript-mode-hook #'lsp)
-(add-hook 'js-mode-hook #'lsp)
-(add-hook 'scss-mode-hook #'lsp)
+(add-hook 'lsp-mode-hook (lambda ()
+			   (lsp-enable-which-key-integration)))
+(add-hook 'typescript-mode-hook #'lsp-deferred)
+(add-hook 'js-mode-hook #'lsp-deferred)
+(add-hook 'scss-mode-hook #'lsp-deferred)
 
+(with-eval-after-load 'flycheck
+  (define-key flycheck-mode-map flycheck-keymap-prefix nil)
+  (setq flycheck-keymap-prefix (kbd "C-l c"))
+  (define-key flycheck-mode-map flycheck-keymap-prefix flycheck-command-map))
 
-(with-eval-after-load 'lsp-ui
+(with-eval-after-load 'lsp-ui-mode
   (setq lsp-ui-doc-position 'bottom)
   (setq lsp-ui-sideline-show-diagnostics t)
   (setq lsp-ui-sideline-show-symbol nil))
 
 (with-eval-after-load 'projectile
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+  (define-key projectile-mode-map (kbd "C-c p") projectile-command-map))
 (add-hook 'projectile-hook 'lsp-dired-mode)
 (add-hook 'projectile-hook 'counsel-projectile-mode)
 
@@ -90,6 +96,10 @@
 (global-linum-mode)
 
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
@@ -100,7 +110,12 @@
    (quote
     ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
  '(package-selected-packages (quote (flycheck typescript-mode which-key))))
-(custom-set-faces )
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
 
 ;;; init.el ends here
