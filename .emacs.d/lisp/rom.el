@@ -38,18 +38,6 @@
 
 
 
-(defun rom-org-setup ()
-  "ORG setup."
-  (variable-pitch-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq-default org-ellipsis " ▾"
-		org-hide-emphasis-markers t)
-  (setq-default evil-auto-indent nil)
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))))
-
 (defun rom-kill-close (&optional ARG)
   "Kill buffer and close window.
 ARG interactive."

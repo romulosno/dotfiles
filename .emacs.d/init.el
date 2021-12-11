@@ -28,11 +28,11 @@
 
 
 (with-eval-after-load 'company
-  (setq-default company-minimum-prefix-length 1))
+  (setq company-minimum-prefix-length 1))
 
 (with-eval-after-load 'typescript-mode
   (setq-default typescript-indent-level 2)
-  (setq-default tab-width 2))
+  (setq tab-width 2))
 
 
 (with-eval-after-load 'js-mode
@@ -40,10 +40,10 @@
   (setq tab-width 2))
 
 (with-eval-after-load 'lsp
-  (setq-default lsp-keymap-prefix "C-c l")
-  (setq-default lsp-idle-delay 0.500)
-  (setq-default lsp-lens-enable t)
-  (setq-default lsp-signature-auto-activate nil)
+  (setq lsp-keymap-prefix "C-c l")
+  (setq lsp-idle-delay 0.500)
+  (setq lsp-lens-enable t)
+  (setq lsp-signature-auto-activate nil)
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map))
 (add-hook 'lsp-mode-hook 'lsp-ui)
 (add-hook 'lsp-mode-hook 'lsp-enable-which-key-integration)
@@ -55,9 +55,9 @@
 
 
 (with-eval-after-load 'lsp-ui
-  (setq-default lsp-ui-doc-position 'bottom)
-  (setq-default lsp-ui-sideline-show-diagnostics t)
-  (setq-default lsp-ui-sideline-show-symbol nil))
+  (setq lsp-ui-doc-position 'bottom)
+  (setq lsp-ui-sideline-show-diagnostics t)
+  (setq lsp-ui-sideline-show-symbol nil))
 
 (with-eval-after-load 'projectile
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
@@ -65,20 +65,16 @@
 (add-hook 'projectile-hook 'counsel-projectile-mode)
 
 (with-eval-after-load 'which-key
-  (setq-default which-key-idle-delay 0.3))
+  (setq which-key-idle-delay 0.3))
 
 (with-eval-after-load 'term
-  (setq-default explicit-shell-file-name "bash")
-  (setq-default term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+  (setq explicit-shell-file-name "bash")
+  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 
-(with-eval-after-load 'org
-  (add-hook 'org-mode-hook (lambda() (rom-org-setup))))
-
+(add-hook 'mhtml-mode-hook 'emmet-mode)
 (with-eval-after-load 'emmet-mode
-  (setq-default emmet-move-cursor-between-quotes t))
+  (setq emmet-move-cursor-between-quotes t))
 
-(with-eval-after-load 'mhtml-mode
-  (add-hook 'mhtml-mode-hook 'emmet-mode))
 
 (rom-setup)
 (projectile-mode 1)
@@ -94,10 +90,6 @@
 (global-linum-mode)
 
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
@@ -108,12 +100,7 @@
    (quote
     ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
  '(package-selected-packages (quote (flycheck typescript-mode which-key))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(custom-set-faces )
 
 
 ;;; init.el ends here
