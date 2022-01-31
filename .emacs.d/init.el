@@ -29,11 +29,12 @@
 
 (with-eval-after-load 'company
   (setq company-minimum-prefix-length 1))
+(require 'company-tabnine)
+(add-to-list 'company-backends #'company-tabnine)
 
 (with-eval-after-load 'typescript-mode
   (setq-default typescript-indent-level 2)
   (setq-default tab-width 2))
-
 
 (with-eval-after-load 'js-mode
   (setq-default js-indent-level 2)
@@ -54,6 +55,7 @@
 (add-hook 'typescript-mode-hook #'lsp-deferred)
 (add-hook 'js-mode-hook #'lsp-deferred)
 (add-hook 'scss-mode-hook #'lsp-deferred)
+(add-hook 'python-mode #'lsp-deferred)
 
 (with-eval-after-load 'flycheck
   (define-key flycheck-mode-map flycheck-keymap-prefix nil)
@@ -81,6 +83,9 @@
 (with-eval-after-load 'emmet-mode
   (setq emmet-move-cursor-between-quotes t))
 
+(require 'yasnippet)
+(yas-reload-all)
+(add-hook 'prog-mode-hook #'yas-minor-mode)
 
 (rom-setup)
 (projectile-mode 1)
@@ -106,10 +111,11 @@
    ["#2e3436" "#a40000" "#4e9a06" "#c4a000" "#204a87" "#5c3566" "#729fcf" "#eeeeec"])
  '(ansi-term-color-vector
    [unspecified "#FFFFFF" "#d15120" "#5f9411" "#d2ad00" "#6b82a7" "#a66bab" "#6b82a7" "#505050"] t)
+ '(custom-enabled-themes '(tango))
  '(custom-safe-themes
-   (quote
-    ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
- '(package-selected-packages (quote (flycheck typescript-mode which-key))))
+   '("665258494d95f08242562063d6a709001ef8d7a7c120ef9ac31b2112ad851eba" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8"))
+ '(package-selected-packages
+   '(yasnippet-snippets jedi lsp-jedi impatient-mode flycheck typescript-mode which-key)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

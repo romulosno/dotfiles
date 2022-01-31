@@ -23,6 +23,8 @@
 		 typescript-mode
 		 which-key
 		 company
+		 yasnippet
+		 company-tabnine
 		 ))
 
 
@@ -36,6 +38,12 @@
     (unless (package-installed-p pkg)
       (package-install pkg))))
 
+
+(defun rom-select-line ()
+  "Select the current line."
+  (interactive)
+  (end-of-line)
+  (set-mark (line-beginning-position)))
 
 
 (defun rom-kill-close (&optional ARG)
