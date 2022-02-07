@@ -24,7 +24,6 @@
 		 which-key
 		 company
 		 yasnippet
-		 company-tabnine
 		 ))
 
 
