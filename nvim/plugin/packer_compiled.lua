@@ -139,6 +139,11 @@ _G.packer_plugins = {
     path = "/home/romulo/.local/share/nvim/site/pack/packer/start/refactoring.nvim",
     url = "https://github.com/ThePrimeagen/refactoring.nvim"
   },
+  ["rooter.nvim"] = {
+    loaded = true,
+    path = "/home/romulo/.local/share/nvim/site/pack/packer/start/rooter.nvim",
+    url = "https://github.com/ygm2/rooter.nvim"
+  },
   ["vim-commentary"] = {
     loaded = true,
     path = "/home/romulo/.local/share/nvim/site/pack/packer/start/vim-commentary",

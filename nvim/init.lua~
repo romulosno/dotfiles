@@ -26,7 +26,6 @@ require('packer').startup(function()
 	}
 	use 'hrsh7th/cmp-nvim-lsp'
 	use 'hrsh7th/cmp-buffer'
-	use 'hrsh7th/vim-vsnip'
 	use 'hrsh7th/nvim-cmp' -- for completion whilst using the language server
 	use 'saadparwaiz1/cmp_luasnip' -- vim cmp requires luasnip
 	use 'nvim-lua/plenary.nvim'
