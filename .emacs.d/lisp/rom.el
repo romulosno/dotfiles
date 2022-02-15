@@ -24,8 +24,8 @@
 		 which-key
 		 company
 		 yasnippet
+		 yasnippet-snippets
 		 ))
-
 
 
 (defun rom-setup ()

@@ -10,11 +10,11 @@
 
 (add-to-list 'load-path "~/.emacs.d/lisp")
 (require 'package)
-(require 'keyb)
 (require 'rom)
+(require 'keyb)
+
 (package-initialize)
-
-
+(rom-setup)
 
 (setq next-line-add-newlines t)
 (setq inhibit-startup-screen t)
@@ -23,12 +23,33 @@
 
 (add-hook 'after-init-hook #'global-company-mode)
 (add-hook 'after-init-hook #'global-flycheck-mode)
+(add-hook 'dired-load-hook
+	  (function (lambda () (load "dired-x"))))
+(setq dired-omit-files
+    (rx (or (seq bol (? ".") "#")     ;; emacs autosave files
+        (seq bol "." (not (any "."))) ;; dot-files
+        (seq "~" eol)                 ;; backup-files
+        (seq bol "CVS" eol)           ;; CVS dirs
+        )))
+    
 
 (put 'dired-find-alternate-file 'disabled nil)
 
-
 (with-eval-after-load 'company
-  (setq company-minimum-prefix-length 1))
+  (setq company-minimum-prefix-length 1)
+  (defun mars/company-backend-with-yas (backends)
+      "Add :with company-yasnippet to company BACKENDS.
+Taken from https://github.com/syl20bnr/spacemacs/pull/179."
+      (if (and (listp backends) (memq 'company-yasnippet backends))
+	  backends
+	(append (if (consp backends)
+		    backends
+		  (list backends))
+		'(:with company-yasnippet))))
+
+    ;; add yasnippet to all backends
+    (setq company-backends
+          (mapcar #'mars/company-backend-with-yas company-backends)))
 
 (with-eval-after-load 'typescript-mode
   (setq-default typescript-indent-level 2)
@@ -37,6 +58,9 @@
 (with-eval-after-load 'js-mode
   (setq-default js-indent-level 2)
   (setq-default tab-width 2))
+
+(with-eval-after-load 'markdown-mode
+  (global-set-key (kbd "C-c RET") 'markdown-toggle-gfm-checkbox))
 
 (with-eval-after-load 'lsp
   (setq lsp-idle-delay 0.500)
@@ -54,6 +78,7 @@
 (add-hook 'js-mode-hook #'lsp-deferred)
 (add-hook 'scss-mode-hook #'lsp-deferred)
 (add-hook 'python-mode #'lsp-deferred)
+(defalias 'yes-or-no-p 'y-or-n-p)
 
 (with-eval-after-load 'flycheck
   (define-key flycheck-mode-map flycheck-keymap-prefix nil)
@@ -115,7 +140,7 @@
     ("a00b7ba0fb438c944f435c9a2c8cfca704d7bbd72b9e65418cfd5f9291ca8253" "665258494d95f08242562063d6a709001ef8d7a7c120ef9ac31b2112ad851eba" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "36f17556e827b41b63fe9375dbeeb4989d4976fe51cd0506968c6a41d2a7c9f8")))
  '(package-selected-packages
    (quote
-    (yasnippet-snippets jedi lsp-jedi impatient-mode flycheck typescript-mode which-key))))
+    (ivy-spotify spotify yasnippet-snippets jedi lsp-jedi impatient-mode flycheck typescript-mode which-key))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

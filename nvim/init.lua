@@ -21,19 +21,20 @@ require('packer').startup(function()
 	use 'wbthomason/packer.nvim' -- Package manager
 	use 'tpope/vim-commentary' -- "gc" to comment visual regions/lines
 	use {
-		'neovim/nvim-lspconfig', 
+		'neovim/nvim-lspconfig',
 		'williamboman/nvim-lsp-installer',
 	}
+	use 'folke/which-key.nvim'
 	use 'hrsh7th/cmp-nvim-lsp'
 	use 'hrsh7th/cmp-buffer'
 	use 'hrsh7th/vim-vsnip'
 	use 'hrsh7th/nvim-cmp' -- for completion whilst using the language server
 	use 'saadparwaiz1/cmp_luasnip' -- vim cmp requires luasnip
 	use 'nvim-lua/plenary.nvim'
-	use 'mattn/emmet-vim' 
-	use 'jiangmiao/auto-pairs' 
+	use 'mattn/emmet-vim'
+	use 'jiangmiao/auto-pairs'
 	use 'junegunn/fzf'
-	use 'junegunn/fzf.vim' 
+	use 'junegunn/fzf.vim'
 	use {
 		"ThePrimeagen/refactoring.nvim",
 		requires = {
@@ -41,14 +42,16 @@ require('packer').startup(function()
 			{"nvim-treesitter/nvim-treesitter"}
 		}
 	}
-	use 'ygm2/rooter.nvim'
-	use 'fatih/vim-go'
 	use 'vimwiki/vimwiki'
+	use 'fatih/vim-go'
+	use {
+		'iamcco/markdown-preview.nvim',
+		run = function() vim.fn['mkdp#util#install']() end,
+		ft = {'markdown'}
+	}
 end)
 
 vim.g.mapleader = ","
-vim.g.rooter_pattern = {'.git', 'Makefile', '_darcs', '.hg', '.bzr', '.svn', 'node_modules', 'CMakeLists.txt'} 
-vim.g.outermost_root = true
 vim.g.user_emmet_leader_key= ","
 vim.g.user_emmet_mode = 'n'
 vim.g.completion_matching_strategy_list ='exact,substring,fuzzy'
@@ -72,18 +75,18 @@ vim.opt.wildignore = vim.opt.wildignore + '*/tmp/*,*.so,*.swp,*.zip'
 vim.o.tabstop = 2
 vim.o.softtabstop = 2
 vim.o.shiftwidth = 2
-vim.o.splitbelow = true 
+vim.o.splitbelow = true
 vim.o.splitright = true
 
 vim.api.nvim_set_keymap('n','<C-J>','<C-W><C-J>',{})
 vim.api.nvim_set_keymap('n','<C-K>','<C-W><C-K>',{})
 vim.api.nvim_set_keymap('n','<C-L>','<C-W><C-L>',{})
 vim.api.nvim_set_keymap('n','<C-H>','<C-W><C-H>',{})
-vim.api.nvim_set_keymap('n','<C-f>',':Files %:p:h<CR>',{})
 vim.api.nvim_set_keymap('n','<C-p>',':Files<CR>',{})
 vim.api.nvim_set_keymap('n','<F2>',':e %:p:h<CR>',{})
 vim.api.nvim_set_keymap('n','<F3>',':e %:p:h',{})
 vim.api.nvim_set_keymap('n','<F4>',':cd %:p:h',{})
+vim.api.nvim_set_keymap('n','<F5>',':bd',{})
 
 
 require('lsp')
