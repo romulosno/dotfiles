@@ -15,7 +15,6 @@
 (global-set-key (kbd "C-c g") 'counsel-git)
 (global-set-key (kbd "C-c f") 'counsel-fzf)
 (global-set-key (kbd "C-c r") 'counsel-rg)
-(global-set-key (kbd "C-M-S-l") 'rom-indent-file)
 (global-set-key (kbd "C-c SPC") 'rom-select-line)
 (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
 (define-key global-map [remap forward-word] 'forward-to-word)

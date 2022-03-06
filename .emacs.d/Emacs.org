@@ -1,0 +1,210 @@
+#+TITLE: Configurações Emacs
+#+PROPERTY: header-args:emacs-lisp :tangle ./init.el
+
+* Básicos
+  Configurações básicas
+  #+begin_src emacs-lisp
+    (require 'package)
+    (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+    (setq inhibit-startup-screen t)
+    (setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
+    (setq enable-recursive-minibuffers t)
+    (defalias 'yes-or-no-p 'y-or-n-p)
+  #+end_src
+* Empacotamento
+  Configuração dos pacotes e inicialização
+** Lista de pacotes
+   Lista de pacotes a serem instalados
+   #+begin_src emacs-lisp
+     (setq package-list
+	   '(company
+	     which-key
+	     lsp-mode
+	     lsp-ui
+	     projectile
+	     typescript-mode
+	     smex))
+   #+end_src
+** Carregamento e instalação
+   Configurações de carregamento e instalação dos pacotes listados
+   #+begin_src emacs-lisp
+     (package-initialize)
+     (unless package-archive-contents
+       (package-refresh-contents))
+
+     (dolist (package package-list)
+       (unless (package-installed-p package)
+	 (package-install package)))
+   #+end_src
+* Atalhos do tecladoq
+  Configurações dos keybindings
+  #+begin_src emacs-lisp 
+    (global-set-key (kbd "M-x") 'smex)
+    (global-set-key (kbd "C-c <left>") 'windmove-left)
+    (global-set-key (kbd "C-c <right>") 'windmove-right)
+    (global-set-key (kbd "C-c <up>") 'windmove-up)
+    (global-set-key (kbd "C-c <down>") 'windmove-down)
+    (global-set-key (kbd "<f5>") 'kill-buffer-and-window)
+    (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
+    (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+  #+end_src
+* Functions
+** Auto-Tangle
+   Configuração para realizar tangle automático do .org
+   #+begin_src emacs-lisp
+     (defun efs/org-babel-tangle-config ()
+       (when (string-equal (buffer-file-name)
+			   (expand-file-name "~/.emacs.d/Emacs.org"))
+	 (let ((org-confirm-babel-evaluate nil))
+	   (org-babel-tangle))))
+   #+end_src
+* Modes
+** Básicos
+   Carregamento dos modos padrões
+   #+begin_src emacs-lisp
+     (electric-pair-mode 1)
+     (ido-mode 1)
+     (show-paren-mode 1)
+     (global-company-mode 1)
+     (visual-line-mode 1)
+     (electric-pair-mode 1)
+     (global-linum-mode 1)
+     (which-key-mode 1)
+     (projectile-mode 1)
+     (show-paren-mode t)
+     (yas-global-mode)
+   #+end_src
+** Visual
+   Configurações dos modos visuais
+   #+begin_src emacs-lisp
+     (tool-bar-mode -1)
+     (menu-bar-mode -1)
+     (toggle-scroll-bar -1)
+   #+end_src
+** Which key
+   #+begin_src emacs-lisp
+     (with-eval-after-load 'which-key
+       (setq which-key-idle-delay 0.3))
+   #+end_src
+** Org
+*** Auto-Tangle
+    #+begin_src emacs-lisp
+      (add-hook 'org-mode-hook (lambda() (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+    #+end_src
+*** Completion
+    #+begin_src emacs-lisp
+      (defun add-pcomplete-to-capf ()
+	(add-hook 'completion-at-point-functions 'pcomplete-completions-at-point nil t))
+    #+end_src
+*** Default
+    #+begin_src emacs-lisp
+      (setq org-src-tab-acts-natively t)
+    #+end_src
+** Flymake
+   #+begin_src emacs-lisp
+     (global-set-key (kbd "M-n") 'flymake-goto-next-error)
+     (global-set-key (kbd "M-p") 'flymake-goto-prev-error)
+     (global-set-key (kbd "<f6>") 'flymake-show-buffer-diagnostics)
+   #+end_src
+** LSP
+   #+begin_src emacs-lisp
+     (with-eval-after-load 'lsp
+       (setq lsp-idle-delay 0.500)
+       (setq lsp-lens-enable t)
+       (setq lsp-signature-auto-activate nil))
+     (add-hook 'lsp-before-initialize-hook (lambda ()
+   				     (setq lsp-keymap-prefix "C-l")
+   				     (define-key lsp-mode-map (kbd "C-l") lsp-command-map)))
+     (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+     (add-hook 'lsp-mode-hook 'lsp-enable-which-key-integration)
+     (add-hook 'lsp-mode-hook 'dap-mode)
+     (add-hook 'lsp-mode-hook (lambda ()
+   			(lsp-enable-which-key-integration)))
+     (add-hook 'typescript-mode-hook #'lsp-deferred)
+     (add-hook 'js-mode-hook #'lsp-deferred)
+     (add-hook 'scss-mode-hook #'lsp-deferred)
+     (add-hook 'python-mode #'lsp-deferred)
+   #+end_src
+** Ido-mode
+   #+begin_src emacs-lisp
+     (setq ido-enable-flex-matching t)
+     (setq ido-everywhere t)
+     (setq ido-ignore-extensions t)
+   #+end_src
+** Dired
+*** Basics
+    #+begin_src emacs-lisp
+      (add-hook 'dired-load-hook
+		(function (lambda () (load "dired-x"))))
+      (setq dired-omit-files
+	    (rx (or (seq bol (? ".") "#")     ;; emacs autosave files
+		    (seq bol "." (not (any "."))) ;; dot-files
+		    (seq "~" eol)                 ;; backup-files
+		    (seq bol "CVS" eol)           ;; CVS dirs
+		    )))
+      (put 'dired-find-alternate-file 'disabled nil)
+    #+end_src
+** Typescript
+   #+begin_src emacs-lisp
+     (with-eval-after-load 'typescript-mode
+       (setq-default typescript-indent-level 2)
+       (setq-default tab-width 2))
+   #+end_src
+** Javascript
+   #+begin_src emacs-lisp
+     (with-eval-after-load 'js-mode
+       (setq-default js-indent-level 2)
+       (setq-default tab-width 2))
+   #+end_src
+** Company
+*** Minimum prefix
+    #+begin_src emacs-lisp
+      (with-eval-after-load 'company
+	(setq company-minimum-prefix-length 1))
+    #+end_src
+*** Yasnippet completion
+    #+begin_src emacs-lisp
+      (with-eval-after-load 'company
+	(setq company-minimum-prefix-length 1)
+	(defun mars/company-backend-with-yas (backends)
+	  "Add :with company-yasnippet to company BACKENDS.
+      Taken from https://github.com/syl20bnr/spacemacs/pull/179."
+	  (if (and (listp backends) (memq 'company-yasnippet backends))
+	      backends
+	    (append (if (consp backends)
+			backends
+		      (list backends))
+		    '(:with company-yasnippet))))
+
+	;; add yasnippet to all backends
+	(setq company-backends
+	      (mapcar #'mars/company-backend-with-yas company-backends)))
+    #+end_src
+*** Global call
+    #+begin_src emacs-lisp
+      (add-hook 'after-init-hook #'global-company-mode)
+    #+end_src
+** Markdown
+   #+begin_src emacs-lisp
+     (with-eval-after-load 'markdown-mode
+       (global-set-key (kbd "C-c RET") 'markdown-toggle-gfm-checkbox))
+   #+end_src
+** Emmet
+   #+begin_src emacs-lisp
+     (add-hook 'mhtml-mode-hook 'emmet-mode)
+     (with-eval-after-load 'emmet-mode
+       (setq emmet-move-cursor-between-quotes t))
+   #+end_src
+** Projectile
+   #+begin_src emacs-lisp
+     (with-eval-after-load 'projectile
+       (define-key projectile-mode-map (kbd "C-c p") projectile-command-map))
+     (add-hook 'projectile-hook 'lsp-dired-mode)
+     (add-hook 'projectile-hook 'counsel-projectile-mode)
+   #+end_src
+** Yasnippet
+   #+begin_src emacs-lisp
+     (require 'yasnippet)
+     (yas-reload-all)
+     (add-hook 'prog-mode-hook #'yas-minor-mode)
+   #+end_src
