@@ -36,7 +36,7 @@
        (unless (package-installed-p package)
 	 (package-install package)))
    #+end_src
-* Atalhos do tecladoq
+* Atalhos do teclados
   Configurações dos keybindings
   #+begin_src emacs-lisp 
     (global-set-key (kbd "M-x") 'smex)
