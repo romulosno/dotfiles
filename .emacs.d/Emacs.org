@@ -60,6 +60,7 @@ Configurações relacionadas ao visual.
 
 * Padrões
 #+begin_src emacs-lisp
+  (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
   (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
   (setq read-process-output-max (* 1024 1024)) ; Performance
   (setq enable-recursive-minibuffers t) ; Permite minibuffers recursivos
