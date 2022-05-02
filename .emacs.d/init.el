@@ -24,7 +24,7 @@
       `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
 
 (setq inhibit-startup-screen t)		; Remove a tela inicial padrão
-(global-linum-mode 1)			; Número das linhas
+; (global-linum-mode 1)			; Número das linhas
 (setq visible-bell 1)			; Remove o beep infernal
 (toggle-scroll-bar -1)			; Remove scroll
 (tool-bar-mode -1)			; Remove barra de ferramenta
@@ -37,12 +37,30 @@
                 shell-mode-hook
                 treemacs-mode-hook
                 eshell-mode-hook))
-  (add-hook mode (lambda () (global-linum-mode nil))))
+  (add-hook mode (lambda () (global-linum-mode -1))))
 
-(setq gc-cons-threshold (* 50 1000 1000)) ; Performance
-(setq read-process-output-max (* 1024 1024)) ; Performance
-(setq enable-recursive-minibuffers t) ; Permite minibuffers recursivos
-(defalias 'yes-or-no-p 'y-or-n-p)     ; Define y e n para sim e não
+(use-package emacs
+  :init
+  (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
+  (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
+  (setq read-process-output-max (* 1024 1024)) ; Performance
+  (defalias 'yes-or-no-p 'y-or-n-p)     ; Define y e n para sim e não
+
+  (setq modus-themes-italic-constructs t
+        modus-themes-bold-constructs nil
+        modus-themes-region '(bg-only no-extend))
+
+  (defun crm-indicator (args)
+    (cons (concat "[CRM] " (car args)) (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+  (setq enable-recursive-minibuffers t)
+  :config
+  (load-theme 'modus-operandi) ;; OR (load-theme 'modus-vivendi)
+  :bind ("<f6>" . modus-themes-toggle))
 
 (global-set-key (kbd "<f5>") 'kill-buffer-and-window)
 (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
@@ -58,12 +76,15 @@
 
 (use-package org
   :ensure t
-  :init (add-hook 'org-mode-hook (lambda() (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
   :custom ((setq org-return-follows-link  t)
-           (setq org-src-tab-acts-natively t)
-           (setq org-latex-toc-command "\\tableofcontents \\clearpage"))
-  :hook ((org-mode . org-indent-mode)
-         (org-mode . org-bullets-mode)))
+	   (setq org-src-tab-acts-natively t)
+	   (setq org-latex-toc-command "\\tableofcontents \\clearpage"))
+  :hook ((org-mode . (lambda() (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+	 (org-mode . org-indent-mode)))
+
+(use-package org-bullets
+  :ensure t
+  :hook ((org-mode) . org-bullets-mode))
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
@@ -72,14 +93,14 @@
       (org-babel-tangle)
       (load "~/dotfiles/.emacs.d/init.el"))))
 
-(use-package lsp
+(use-package lsp-mode
   :custom ((setq lsp-log-io nil) ; Performance
            (setq lsp-idle-delay 0.500) 
            (setq lsp-lens-enable t)
            (setq lsp-signature-auto-activate nil))
-  :init (setq lsp-keymap-prefix "C-l")
+  :init (setq lsp-keymap-prefix "C-c l")
   :commands (lsp lsp-deferred)
-  :bind-keymap ("C-l" . lsp-command-map)
+  :bind-keymap ("C-c l" . lsp-command-map)
   :hook ((typescript-mode . lsp-deferred)
          (js-mode . lsp-deferred)
          (scss-mode . lsp-deferred)
@@ -91,20 +112,6 @@
   :ensure t
   :hook (lsp-mode . dap-mode))
 
-(use-package ido
-  :ensure t
-  :custom ((setq ido-enable-flex-matching t)
-           (setq ido-everywhere t)
-           (setq ido-ignore-extensions t))
-  :config (ido-mode 1))
-(push "~" completion-ignored-extensions)
-
-(use-package ido-vertical-mode
-  :ensure t
-  :config (ido-vertical-mode 1)
-  :init (setq ido-vertical-define-keys 'C-n-and-C-p-only)
-  :hook (ido-mode . ido-vertical-mode))
-
 (use-package dired
   :init (setq dired-listing-switches "-agho --group-directories-first")
   :custom (setq dired-omit-files
@@ -113,12 +120,12 @@
                         (seq "~" eol)                 ;; backup-files
                         (seq bol "CVS" eol)           ;; CVS dirs
                         ))))
-(put 'dired-find-alternate-file 'disabled nil)
+(put 'dired-find-alternate-file 'diasbled nil)
 
 (use-package typescript-mode
   :ensure t
-  :custom ((setq typescript-indent-level 2)
-           (setq tab-width 2)))
+  :custom ((typescript-indent-level 2)
+           (tab-width 2)))
 
 (use-package js3-mode
   :ensure t
@@ -150,10 +157,6 @@
   :bind-keymap  ("C-c p" . projectile-command-map)
   :hook (projectile . lsp-dired-mode))
 
-(use-package smex
-  :ensure t
-  :bind ("M-x" . smex))
-
 (use-package pdf-tools
   :ensure t
   :mode "\\.pdf\\'")
@@ -162,3 +165,149 @@
 (global-set-key (kbd "C-c <right>") 'windmove-right)
 (global-set-key (kbd "C-c <up>") 'windmove-up)
 (global-set-key (kbd "C-c <down>") 'windmove-down)
+
+(defun tree-sitter-mark-bigger-node ()
+(interactive)
+(let* ((p (point))
+       (m (or (mark) p))
+       (beg (min p m))
+       (end (max p m))
+       (root (ts-root-node tree-sitter-tree))
+       (node (ts-get-descendant-for-position-range root beg end))
+       (node-beg (ts-node-start-position node))
+       (node-end (ts-node-end-position node)))
+  ;; Node fits the region exactly. Try its parent node instead.
+  (when (and (= beg node-beg) (= end node-end))
+    (when-let ((node (ts-get-parent node)))
+      (setq node-beg (ts-node-start-position node)
+            node-end (ts-node-end-position node))))
+  (set-mark node-end)
+  (goto-char node-beg)))
+
+(use-package tree-sitter
+  :ensure t
+  :config (global-tree-sitter-mode 1)
+  :custom (setq er/try-expand-list (append er/try-expand-list
+                           '(tree-sitter-mark-bigger-node))))
+(use-package tree-sitter-langs
+  :ensure t)
+
+(use-package expand-region
+  :ensure t
+  :bind ("C-=" . er/expand-region))
+
+(defun prot-orderless-literal-dispatcher (pattern _index _total)
+  "Literal style dispatcher using the equals sign as a suffix.
+It matches PATTERN _INDEX and _TOTAL according to how Orderless
+parses its input."
+  (when (string-suffix-p "=" pattern)
+    `(orderless-literal . ,(substring pattern 0 -1))))
+
+(use-package orderless
+  :ensure t
+  :init (setq completion-styles '(orderless basic)
+      completion-category-defaults nil
+      completion-category-overrides '((file (styles partial-completion))))
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion prot-orderless-literal-dispatcher)))))
+
+(use-package embark
+  :ensure t
+
+  :bind
+  (("C-ç" . embark-act)         ;; pick some comfortable binding
+   ("M-ç" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(use-package consult
+;; Replace bindings. Lazily loaded due by `use-package'.
+:bind (;; C-c bindings (mode-specific-map)
+       ("C-c h" . consult-history)
+       ("C-c m" . consult-mode-command)
+       ("C-c k" . consult-kmacro)
+       ;; C-x bindings (ctl-x-map)
+       ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+       ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+       ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+       ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+       ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+       ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+       ;; Custom M-# bindings for fast register access
+       ("M-#" . consult-register-load)
+       ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+       ("C-M-#" . consult-register)
+       ;; Other custom bindings
+       ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+       ("<help> a" . consult-apropos)            ;; orig. apropos-command
+       ;; M-g bindings (goto-map)
+       ("M-g e" . consult-compile-error)
+       ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+       ("M-g g" . consult-goto-line)             ;; orig. goto-line
+       ("M-g h" . consult-outline)               ;; Alternative: consult-org-heading
+       ("M-g m" . consult-mark)
+       ("M-g k" . consult-global-mark)
+       ("M-g i" . consult-imenu)
+       ("M-g I" . consult-imenu-multi)
+       ;; M-s bindings (search-map)
+       ("M-s d" . consult-find)
+       ("M-s D" . consult-locate)
+       ("M-s g" . consult-grep)
+       ("M-s G" . consult-git-grep)
+       ("M-s r" . consult-ripgrep)
+       ("M-s l" . consult-line)
+       ("M-s L" . consult-line-multi)
+       ("M-s m" . consult-multi-occur)
+       ("M-s k" . consult-keep-lines)
+       ("M-s u" . consult-focus-lines)
+       ;; Isearch integration
+       ("M-s e" . consult-isearch-history)
+       :map isearch-mode-map
+       ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+       ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+       ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+       ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+       ;; Minibuffer history
+       :map minibuffer-local-map
+       ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+       ("M-r" . consult-history))
+:ensure t)                ;; orig. previous-matching-history-element
+
+(use-package marginalia
+  :ensure t
+  :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :config (marginalia-mode 1))
+
+(use-package icomplete
+  :config (icomplete-mode 1))
+
+(use-package vertico
+  :ensure t
+  :config (vertico-mode)
+  :custom ((setq vertico-multiform-commands
+                 '((consult-imenu buffer indexed)
+                   (execute-extended-command unobtrusive)))
+           (setq vertico-multiform-categories
+                 '((file grid)
+                   (consult-grep buffer)))))
+
+(use-package yaml-mode
+  :ensure t)
+
+(use-package eshell
+  :bind ("<f7>" . eshell))
