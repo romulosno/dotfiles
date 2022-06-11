@@ -1,6 +1,84 @@
 #+TITLE: Configurações Emacs
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 
+* Empacotamento
+Configurações básicas do Emacs: carregamento do módulo package e adição do repo MELPA.
+#+begin_src emacs-lisp
+  (require 'package)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("org" . "https://orgmode.org/elpa/")
+                           ("elpa" . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
+  (unless package-archive-contents
+    (package-refresh-contents))
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
+#+end_src
+
+* Tema e outros padrões
+#+begin_src emacs-lisp
+  (use-package emacs
+    :init
+    (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
+    (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
+    (setq read-process-output-max (* 1024 1024)) ; Performance
+    (defalias 'yes-or-no-p 'y-or-n-p)     ; Define y e n para sim e não
+
+    (setq modus-themes-italic-constructs t
+          modus-themes-bold-constructs nil
+          modus-themes-region '(bg-only no-extend))
+
+    (defun crm-indicator (args)
+      (cons (concat "[CRM] " (car args)) (cdr args)))
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+    (setq minibuffer-prompt-properties
+          '(read-only t cursor-intangible t face minibuffer-prompt))
+    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+    (setq enable-recursive-minibuffers t)
+    :config
+    (load-theme 'modus-operandi t nil) ;; OR (load-theme 'modus-vivendi)
+    :bind ("<f6>" . modus-themes-toggle))
+
+#+end_src
+
+* UI
+Configurações relacionadas ao visual.
+#+begin_src emacs-lisp
+  (setq inhibit-startup-screen t)		; Remove a tela inicial padrão
+                                          ; (global-linum-mode 1)			; Número das linhas
+  (setq visible-bell 1)			; Remove o beep infernal
+  (toggle-scroll-bar -1)			; Remove scroll
+  (tool-bar-mode -1)			; Remove barra de ferramenta
+  (menu-bar-mode -1)			; Remove menus
+  (set-fringe-mode 10)			; Padding
+
+  ;; Desabilita números das linhas em alguns modos
+  (dolist (mode '(org-mode-hook
+                  term-mode-hook
+                  shell-mode-hook
+                  treemacs-mode-hook
+                  eshell-mode-hook))
+    (add-hook mode (lambda () (global-linum-mode -1))))
+#+end_src
+
+* Divisão de tela
+Configurações dos keybindings para dividir tela e matar buffer dividido.
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<f5>") 'kill-buffer-and-window)
+  (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
+  (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+#+end_src
+
+* Keep clean
+Mantem a pasta do emacs limpinhas (cache).
+#+begin_src emacs-lisp
+  (use-package no-littering
+    :ensure t)
+  (setq auto-save-file-name-transforms
+        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+#+end_src
+
 * Auto-update
 Configura o auto update dos pacotes
 #+begin_src emacs-lisp
@@ -15,15 +93,24 @@ Configura o auto update dos pacotes
     (auto-package-update-at-time "09:00"))
 #+end_src
 
+* Parenteses
+Lidando com par de brackets ((), [], {}).
+#+begin_src emacs-lisp
+  (electric-pair-mode 1)			; Fechar parenteses
+  (show-paren-mode 1)			; Mostra o parenteses par
+#+end_src
+
 * Company
 ** Minimum prefix
 #+begin_src emacs-lisp
-  (use-package company
-    :ensure t
-    :custom ((setq company-minimum-prefix-length 1)
-             (setq company-dabbrev-downcase nil))
-    :config (global-company-mode 1))
-#+end_src
+  ;; (use-package company
+  ;;   :ensure t
+  ;;   :config (global-company-mode 1))
+  ;; (push 'company-lsp company-backends)
+  ;; (setq company-minimum-prefix-length 1)
+  ;; (setq company-dabbrev-downcase nil)
+  ;; (setq company-idle-delay 0.0)
+  #+end_src
 
 * Consult
 #+begin_src emacs-lisp
@@ -84,9 +171,9 @@ Configura o auto update dos pacotes
 * DAP-mode
 Modo de debug para o lsp.
 #+begin_src emacs-lisp
-  (use-package dap-mode
-    :ensure t
-    :hook (lsp-mode . dap-mode))
+  ;; (use-package dap-mode
+  ;;   :ensure t
+  ;;   :hook (lsp-mode . dap-mode))
 #+end_src
 
 * Dired
@@ -101,14 +188,6 @@ Modo de debug para o lsp.
                           (seq bol "CVS" eol)           ;; CVS dirs
                           ))))
   (put 'dired-find-alternate-file 'diasbled nil)
-#+end_src
-
-* Divisão de tela
-Configurações dos keybindings para dividir tela e matar buffer dividido.
-#+begin_src emacs-lisp
-  (global-set-key (kbd "<f5>") 'kill-buffer-and-window)
-  (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
-  (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
 #+end_src
 
 * Embark
@@ -144,20 +223,6 @@ Configurações dos keybindings para dividir tela e matar buffer dividido.
            (scss-mode . emmet-mode)))
 #+end_src
 
-* Empacotamento
-Configurações básicas do Emacs: carregamento do módulo package e adição do repo MELPA.
-#+begin_src emacs-lisp
-  (require 'package)
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")))
-  (package-initialize)
-  (unless package-archive-contents
-    (package-refresh-contents))
-  (unless (package-installed-p 'use-package)
-    (package-install 'use-package))
-#+end_src
-
 * Eshell
 #+BEGIN_SRC emacs-lisp
     (use-package eshell
@@ -180,8 +245,8 @@ Configurações básicas do Emacs: carregamento do módulo package e adição do
 
 * Icomplete
 #+begin_src emacs-lisp
-  (use-package icomplete
-    :config (icomplete-mode 1))
+  ;; (use-package icomplete
+  ;;   :config (icomplete-mode 1))
 #+end_src
 
 * Javascript
@@ -192,32 +257,23 @@ Configurações básicas do Emacs: carregamento do módulo package e adição do
              (setq tab-width 2)))
 #+end_src
 
-* Keep clean
-Mantem a pasta do emacs limpinhas (cache).
-#+begin_src emacs-lisp
-  (use-package no-littering
-    :ensure t)
-  (setq auto-save-file-name-transforms
-        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-#+end_src
-
 * LSP
 Configura os language server protocols para programar de boa.
 #+begin_src emacs-lisp
-  (use-package lsp-mode
-    :custom ((setq lsp-log-io nil) ; Performance
-             (setq lsp-idle-delay 0.500) 
-             (setq lsp-lens-enable t)
-             (setq lsp-signature-auto-activate nil))
-    :init (setq lsp-keymap-prefix "C-l")
-    :commands (lsp lsp-deferred)
-    :bind-keymap ("C-l" . lsp-command-map)
-    :hook ((typescript-mode . lsp-deferred)
-           (js-mode . lsp-deferred)
-           (scss-mode . lsp-deferred)
-           (java-mode . lsp-deferred)
-           (python-mode . lsp-deferred)
-           (lsp-mode . lsp-enable-whick-key-integration)))
+  ;; (use-package lsp-mode
+  ;;   :custom ((setq lsp-log-io nil) ; Performance
+  ;;            (setq lsp-idle-delay 0.500) 
+  ;;            (setq lsp-lens-enable t)
+  ;;            (setq lsp-signature-auto-activate nil))
+  ;;   :init (setq lsp-keymap-prefix "C-l")
+  ;;   :commands (lsp lsp-deferred)
+  ;;   :bind-keymap ("C-l" . lsp-command-map)
+  ;;   :hook ((typescript-mode . lsp-deferred)
+  ;;          (js-mode . lsp-deferred)
+  ;;          (scss-mode . lsp-deferred)
+  ;;          (java-mode . lsp-deferred)
+  ;;          (python-mode . lsp-deferred)
+  ;;          (lsp-mode . lsp-enable-whick-key-integration)))
 #+end_src
   
 * Magit
@@ -233,7 +289,19 @@ Interface para o git.
     :bind (("M-A" . marginalia-cycle)
            :map minibuffer-local-map
            ("M-A" . marginalia-cycle))
-    :config (marginalia-mode 1))
+    :init (marginalia-mode))
+#+end_src
+* Corfu
+#+begin_src emacs-lisp
+  (use-package corfu
+    :ensure t
+    :init
+    (global-corfu-mode))
+
+  (use-package emacs
+    :init
+    (setq completion-cycle-threshold 3)
+    (setq tab-always-indent 'complete))
 #+end_src
 
 * Markdown
@@ -309,13 +377,6 @@ Configuração para realizar tangle automático do arquivo  e recarregar configu
         (load "~/dotfiles/.emacs.d/init.el"))))
 #+end_src
 
-* Parenteses
-Lidando com par de brackets ((), [], {}).
-#+begin_src emacs-lisp
-  (electric-pair-mode 1)			; Fechar parenteses
-  (show-paren-mode 1)			; Mostra o parenteses par
-#+end_src
-
 * PDF-Tools
 #+begin_src emacs-lisp
   (use-package pdf-tools
@@ -332,33 +393,6 @@ Pacote para lidar com meus projetos Git. Define o keybinding e a chamada dos mod
     :config (projectile-mode 1)
     :bind-keymap  ("C-c p" . projectile-command-map)
     :hook (projectile . lsp-dired-mode))
-#+end_src
-
-* Tema e outros padrões
-#+begin_src emacs-lisp
-  (use-package emacs
-    :init
-    (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
-    (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
-    (setq read-process-output-max (* 1024 1024)) ; Performance
-    (defalias 'yes-or-no-p 'y-or-n-p)     ; Define y e n para sim e não
-
-    (setq modus-themes-italic-constructs t
-          modus-themes-bold-constructs nil
-          modus-themes-region '(bg-only no-extend))
-
-    (defun crm-indicator (args)
-      (cons (concat "[CRM] " (car args)) (cdr args)))
-    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
-
-    (setq minibuffer-prompt-properties
-          '(read-only t cursor-intangible t face minibuffer-prompt))
-    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
-    (setq enable-recursive-minibuffers t)
-    :config
-    (load-theme 'modus-operandi) ;; OR (load-theme 'modus-vivendi)
-    :bind ("<f6>" . modus-themes-toggle))
-
 #+end_src
 
 * Tree-sitter
@@ -398,26 +432,6 @@ Pacote para lidar com meus projetos Git. Define o keybinding e a chamada dos mod
              (tab-width 2)))
 #+end_src
 
-* UI
-Configurações relacionadas ao visual.
-#+begin_src emacs-lisp
-  (setq inhibit-startup-screen t)		; Remove a tela inicial padrão
-                                          ; (global-linum-mode 1)			; Número das linhas
-  (setq visible-bell 1)			; Remove o beep infernal
-  (toggle-scroll-bar -1)			; Remove scroll
-  (tool-bar-mode -1)			; Remove barra de ferramenta
-  (menu-bar-mode -1)			; Remove menus
-  (set-fringe-mode 10)			; Padding
-
-  ;; Desabilita números das linhas em alguns modos
-  (dolist (mode '(org-mode-hook
-                  term-mode-hook
-                  shell-mode-hook
-                  treemacs-mode-hook
-                  eshell-mode-hook))
-    (add-hook mode (lambda () (global-linum-mode -1))))
-#+end_src
-
 * VERTico
 #+BEGIN_SRC emacs-lisp
   (use-package vertico
@@ -454,3 +468,8 @@ Habilita uma ajudinha com os keybindings.
       :ensure t)
 #+END_SRC
 
+* Eglot
+#+begin_src emacs-lisp
+    (use-package eglot
+      :ensure t)
+#+end_src

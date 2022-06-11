@@ -1,3 +1,61 @@
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(use-package emacs
+  :init
+  (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
+  (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
+  (setq read-process-output-max (* 1024 1024)) ; Performance
+  (defalias 'yes-or-no-p 'y-or-n-p)     ; Define y e n para sim e não
+
+  (setq modus-themes-italic-constructs t
+        modus-themes-bold-constructs nil
+        modus-themes-region '(bg-only no-extend))
+
+  (defun crm-indicator (args)
+    (cons (concat "[CRM] " (car args)) (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+  (setq enable-recursive-minibuffers t)
+  :config
+  (load-theme 'modus-operandi t nil) ;; OR (load-theme 'modus-vivendi)
+  :bind ("<f6>" . modus-themes-toggle))
+
+(setq inhibit-startup-screen t)		; Remove a tela inicial padrão
+                                        ; (global-linum-mode 1)			; Número das linhas
+(setq visible-bell 1)			; Remove o beep infernal
+(toggle-scroll-bar -1)			; Remove scroll
+(tool-bar-mode -1)			; Remove barra de ferramenta
+(menu-bar-mode -1)			; Remove menus
+(set-fringe-mode 10)			; Padding
+
+;; Desabilita números das linhas em alguns modos
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+                treemacs-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (global-linum-mode -1))))
+
+(global-set-key (kbd "<f5>") 'kill-buffer-and-window)
+(global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
+(global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+
+(use-package no-littering
+  :ensure t)
+(setq auto-save-file-name-transforms
+      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
 (use-package auto-package-update
   :ensure t
   :custom
@@ -8,11 +66,16 @@
   (auto-package-update-maybe)
   (auto-package-update-at-time "09:00"))
 
-(use-package company
-  :ensure t
-  :custom ((setq company-minimum-prefix-length 1)
-           (setq company-dabbrev-downcase nil))
-  :config (global-company-mode 1))
+(electric-pair-mode 1)			; Fechar parenteses
+(show-paren-mode 1)			; Mostra o parenteses par
+
+;; (use-package company
+;;   :ensure t
+;;   :config (global-company-mode 1))
+;; (push 'company-lsp company-backends)
+;; (setq company-minimum-prefix-length 1)
+;; (setq company-dabbrev-downcase nil)
+;; (setq company-idle-delay 0.0)
 
 (use-package consult
 ;; Replace bindings. Lazily loaded due by `use-package'.
@@ -67,9 +130,9 @@
        ("M-r" . consult-history))
 :ensure t)                ;; orig. previous-matching-history-element
 
-(use-package dap-mode
-  :ensure t
-  :hook (lsp-mode . dap-mode))
+;; (use-package dap-mode
+;;   :ensure t
+;;   :hook (lsp-mode . dap-mode))
 
 (use-package dired
   :init (setq dired-listing-switches "-agho --group-directories-first")
@@ -80,10 +143,6 @@
                         (seq bol "CVS" eol)           ;; CVS dirs
                         ))))
 (put 'dired-find-alternate-file 'diasbled nil)
-
-(global-set-key (kbd "<f5>") 'kill-buffer-and-window)
-(global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
-(global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
 
 (use-package embark
   :ensure t
@@ -112,16 +171,6 @@
   :hook ((web-mode . emmet-mode)
          (scss-mode . emmet-mode)))
 
-(require 'package)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")))
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-
 (use-package eshell
   :bind ("<f7>" . eshell))
 
@@ -133,33 +182,28 @@
   :ensure t
   :mode "\\.html\\'")
 
-(use-package icomplete
-  :config (icomplete-mode 1))
+;; (use-package icomplete
+;;   :config (icomplete-mode 1))
 
 (use-package js3-mode
   :ensure t
   :custom ((setq js-indent-level 2)
            (setq tab-width 2)))
 
-(use-package no-littering
-  :ensure t)
-(setq auto-save-file-name-transforms
-      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-
-(use-package lsp-mode
-  :custom ((setq lsp-log-io nil) ; Performance
-           (setq lsp-idle-delay 0.500) 
-           (setq lsp-lens-enable t)
-           (setq lsp-signature-auto-activate nil))
-  :init (setq lsp-keymap-prefix "C-l")
-  :commands (lsp lsp-deferred)
-  :bind-keymap ("C-l" . lsp-command-map)
-  :hook ((typescript-mode . lsp-deferred)
-         (js-mode . lsp-deferred)
-         (scss-mode . lsp-deferred)
-         (java-mode . lsp-deferred)
-         (python-mode . lsp-deferred)
-         (lsp-mode . lsp-enable-whick-key-integration)))
+;; (use-package lsp-mode
+;;   :custom ((setq lsp-log-io nil) ; Performance
+;;            (setq lsp-idle-delay 0.500) 
+;;            (setq lsp-lens-enable t)
+;;            (setq lsp-signature-auto-activate nil))
+;;   :init (setq lsp-keymap-prefix "C-l")
+;;   :commands (lsp lsp-deferred)
+;;   :bind-keymap ("C-l" . lsp-command-map)
+;;   :hook ((typescript-mode . lsp-deferred)
+;;          (js-mode . lsp-deferred)
+;;          (scss-mode . lsp-deferred)
+;;          (java-mode . lsp-deferred)
+;;          (python-mode . lsp-deferred)
+;;          (lsp-mode . lsp-enable-whick-key-integration)))
 
 (use-package magit
   :ensure t)
@@ -169,7 +213,17 @@
   :bind (("M-A" . marginalia-cycle)
          :map minibuffer-local-map
          ("M-A" . marginalia-cycle))
-  :config (marginalia-mode 1))
+  :init (marginalia-mode))
+
+(use-package corfu
+  :ensure t
+  :init
+  (global-corfu-mode))
+
+(use-package emacs
+  :init
+  (setq completion-cycle-threshold 3)
+  (setq tab-always-indent 'complete))
 
 (use-package markdown-mode
   :bind ("C-c RET" . markdown-toggle-gfm-checkbox))
@@ -226,9 +280,6 @@ parses its input."
       (org-babel-tangle)
       (load "~/dotfiles/.emacs.d/init.el"))))
 
-(electric-pair-mode 1)			; Fechar parenteses
-(show-paren-mode 1)			; Mostra o parenteses par
-
 (use-package pdf-tools
   :ensure t
   :mode "\\.pdf\\'")
@@ -238,29 +289,6 @@ parses its input."
   :config (projectile-mode 1)
   :bind-keymap  ("C-c p" . projectile-command-map)
   :hook (projectile . lsp-dired-mode))
-
-(use-package emacs
-  :init
-  (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
-  (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
-  (setq read-process-output-max (* 1024 1024)) ; Performance
-  (defalias 'yes-or-no-p 'y-or-n-p)     ; Define y e n para sim e não
-
-  (setq modus-themes-italic-constructs t
-        modus-themes-bold-constructs nil
-        modus-themes-region '(bg-only no-extend))
-
-  (defun crm-indicator (args)
-    (cons (concat "[CRM] " (car args)) (cdr args)))
-  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
-
-  (setq minibuffer-prompt-properties
-        '(read-only t cursor-intangible t face minibuffer-prompt))
-  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
-  (setq enable-recursive-minibuffers t)
-  :config
-  (load-theme 'modus-operandi) ;; OR (load-theme 'modus-vivendi)
-  :bind ("<f6>" . modus-themes-toggle))
 
 (defun tree-sitter-mark-bigger-node ()
 (interactive)
@@ -293,22 +321,6 @@ parses its input."
   :custom ((typescript-indent-level 2)
            (tab-width 2)))
 
-(setq inhibit-startup-screen t)		; Remove a tela inicial padrão
-                                        ; (global-linum-mode 1)			; Número das linhas
-(setq visible-bell 1)			; Remove o beep infernal
-(toggle-scroll-bar -1)			; Remove scroll
-(tool-bar-mode -1)			; Remove barra de ferramenta
-(menu-bar-mode -1)			; Remove menus
-(set-fringe-mode 10)			; Padding
-
-;; Desabilita números das linhas em alguns modos
-(dolist (mode '(org-mode-hook
-                term-mode-hook
-                shell-mode-hook
-                treemacs-mode-hook
-                eshell-mode-hook))
-  (add-hook mode (lambda () (global-linum-mode -1))))
-
 (use-package vertico
   :ensure t
   :config (vertico-mode)
@@ -331,18 +343,6 @@ parses its input."
 
 (use-package yaml-mode
   :ensure t)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-	 '("dad40020beea412623b04507a4c185079bff4dcea20a93d8f8451acb6afc8358" "c414f69a02b719fb9867b41915cb49c853489930be280ce81385ff7b327b4bf6" default))
- '(package-selected-packages
-	 '(magit yaml-mode which-key web-mode vertico use-package typescript-mode tree-sitter-langs projectile pdf-tools org-bullets orderless no-littering modus-themes marginalia js3-mode expand-region emmet-mode embark dap-mode consult company auto-package-update)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+
+(use-package eglot
+  :ensure t)
