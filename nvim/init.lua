@@ -1,89 +1,4 @@
--- Install packer
-local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
-
-if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-	vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
-end
-
-vim.api.nvim_exec(
-[[
-augroup Packer
-autocmd!
-autocmd BufWritePost init.lua PackerCompile
-augroup end
-]],
-false
-)
-
-
-local use = require('packer').use
-require('packer').startup(function()
-	use 'wbthomason/packer.nvim' -- Package manager
-	use 'b3nj5m1n/kommentary' -- Comentários
-	use 'hrsh7th/cmp-nvim-lsp'
-	use 'hrsh7th/cmp-buffer'
-	use {
-		'vimwiki/vimwiki',
-		config = function()
-			vim.g.vimwiki_list = {
-				{
-					path = '/home/xx/Documents/singularityOffice/wiki',
-					syntax = 'markdown',
-					ext = '.md',
-				}
-			}
-		end
-	}
-	use{
-		'L3MON4D3/LuaSnip',
-		requires='rafamadriz/friendly-snippets'
-	}
-	use 'mfussenegger/nvim-dap'
-	use 'nvim-lua/plenary.nvim'
-	use {
-		"mattn/emmet-vim",
-		setup = function () -- load stuff before the plugin is loaded
-			vim.g.user_emmet_leader_key = '<c-m>'
-			vim.g.user_emmet_mode = 'n'
-			vim.g.user_emmet_settings = {
-				indent_blockelement = 1,
-			}
-		end
-	}
-	use {
-		'neovim/nvim-lspconfig',
-		'williamboman/nvim-lsp-installer',
-	}
-	use {
-		'folke/which-key.nvim',
-		config = function()
-			require("which-key").setup({}) end
-	}
-	use 'hrsh7th/nvim-cmp'
-	use {
-		'windwp/nvim-autopairs',
-		config = function()
-			require('nvim-autopairs').setup{} 
-		end
-	}
-	use {
-		"ThePrimeagen/refactoring.nvim",
-		requires = {
-			{"nvim-lua/plenary.nvim"},
-			{
-				"nvim-treesitter/nvim-treesitter",
-				run = ':TSUpdate'
-			}
-		},
-		config = function()
-			require('refactoring').setup({})
-		end
-	}
-	use {
-		'nvim-telescope/telescope.nvim',
-		requires = { 'nvim-lua/plenary.nvim' }
-	}
-end)
+local vim = vim
 
 --Remap space as leader key
 vim.g.mapleader = " "
@@ -112,15 +27,7 @@ vim.o.shiftwidth = 2
 vim.o.splitbelow = true
 vim.o.splitright = true
 
-
-local function map(mode, lhs, rhs, opts)
-	local options = { noremap = true, silent = true }
-	if opts then
-		options = vim.tbl_extend('force', options, opts)
-	end
-	vim.api.nvim_set_keymap(mode, lhs, rhs, options)
-end
-
+local map = require("rom_utils").map
 map('n','<C-J>','<C-W><C-J>')
 map('n','<C-K>','<C-W><C-K>')
 map('n','<C-L>','<C-W><C-L>')
@@ -129,27 +36,16 @@ map('n','<leader>ff','<cmd>Telescope find_files<CR>')
 map('n','<leader>fg','<cmd>Telescope live_grep<cr>')
 map('n','<leader>fb','<cmd>Telescope buffers<cr>')
 map('n','<leader>fh','<cmd>Telescope help_tags<cr>')
-map('n','<F2>',':e %:p:h<CR>')
-map('n','<F3>','<cmd> lua require(\'telescope.builtin\').find_files( { cwd = vim.fn.expand(\'%:p:h\') })<cr>')
-map('n','<F4>',':bd <CR>')
+map('n','<F2>',':sp %:p:h<CR>')
+map('n','<F3>',':bd <CR>')
 map('n','<leader>v', ':vsplit <CR>')
 map('n','<leader>s', ':split <CR>')
 map('n','<esc>', ':noh<CR>')
-require('lsp')
-require("luasnip.loaders.from_vscode").lazy_load()
+map('c','<C-x>','%:p:h')
 
+require("rom_packages")
+require("rom_telescope")
+require("rom_lsp")
+require("rom_cmp")
 
-local action_layout = require("telescope.actions.layout")
-require('telescope').setup{
-	defaults = {
-		layout_config = {
-			vertical = { width = 0.5 }
-		},
-		mappings = { 
-			i = {
-				["?"] = action_layout.toggle_preview,
-			},
-		},
-	},
-}
 ::eof::

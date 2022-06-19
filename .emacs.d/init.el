@@ -28,7 +28,7 @@
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
   (setq enable-recursive-minibuffers t)
   :config
-  (load-theme 'modus-operandi t nil) ;; OR (load-theme 'modus-vivendi)
+  (load-theme 'modus-vivendi t nil) ;; OR (load-theme 'modus-vivendi)
   :bind ("<f6>" . modus-themes-toggle))
 
 (setq inhibit-startup-screen t)		; Remove a tela inicial padrão
@@ -68,14 +68,6 @@
 
 (electric-pair-mode 1)			; Fechar parenteses
 (show-paren-mode 1)			; Mostra o parenteses par
-
-;; (use-package company
-;;   :ensure t
-;;   :config (global-company-mode 1))
-;; (push 'company-lsp company-backends)
-;; (setq company-minimum-prefix-length 1)
-;; (setq company-dabbrev-downcase nil)
-;; (setq company-idle-delay 0.0)
 
 (use-package consult
 ;; Replace bindings. Lazily loaded due by `use-package'.
@@ -130,9 +122,29 @@
        ("M-r" . consult-history))
 :ensure t)                ;; orig. previous-matching-history-element
 
-;; (use-package dap-mode
-;;   :ensure t
-;;   :hook (lsp-mode . dap-mode))
+(defun rom-lsp ()
+  (setq lsp-keymap-prefix "C-M-<return>"
+        lsp-idle-delay 0.5
+        lsp-prefer-capf t)
+  (defun my/lsp-mode-setup-completion ()
+    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+          '(flex))))
+(use-package lsp-mode
+  :ensure t
+  :custom   (lsp-completion-provider :none) ;; we use Corfu!
+  :commands (lsp lsp-deferred)
+  :init (rom-lsp)
+  :config
+  (define-key lsp-mode-map (kbd "C-M-<return>") lsp-command-map)
+  :hook ((java-mode . lsp-deferred)
+       (lsp-completion-mode . my/lsp-mode-setup-completion)
+       (lsp-mode . lsp-enable-which-key-integration)))
+
+(use-package lsp-java
+  :ensure t)
+
+(use-package dap-mode
+  :ensure t)
 
 (use-package dired
   :init (setq dired-listing-switches "-agho --group-directories-first")
@@ -185,26 +197,6 @@
 ;; (use-package icomplete
 ;;   :config (icomplete-mode 1))
 
-(use-package js3-mode
-  :ensure t
-  :custom ((setq js-indent-level 2)
-           (setq tab-width 2)))
-
-;; (use-package lsp-mode
-;;   :custom ((setq lsp-log-io nil) ; Performance
-;;            (setq lsp-idle-delay 0.500) 
-;;            (setq lsp-lens-enable t)
-;;            (setq lsp-signature-auto-activate nil))
-;;   :init (setq lsp-keymap-prefix "C-l")
-;;   :commands (lsp lsp-deferred)
-;;   :bind-keymap ("C-l" . lsp-command-map)
-;;   :hook ((typescript-mode . lsp-deferred)
-;;          (js-mode . lsp-deferred)
-;;          (scss-mode . lsp-deferred)
-;;          (java-mode . lsp-deferred)
-;;          (python-mode . lsp-deferred)
-;;          (lsp-mode . lsp-enable-whick-key-integration)))
-
 (use-package magit
   :ensure t)
 
@@ -217,8 +209,9 @@
 
 (use-package corfu
   :ensure t
-  :init
-  (global-corfu-mode))
+  :custom ((corfu-auto t)
+           (corfu-separator)) 
+  :init (global-corfu-mode))        
 
 (use-package emacs
   :init
@@ -284,12 +277,6 @@ parses its input."
   :ensure t
   :mode "\\.pdf\\'")
 
-(use-package projectile
-  :ensure t
-  :config (projectile-mode 1)
-  :bind-keymap  ("C-c p" . projectile-command-map)
-  :hook (projectile . lsp-dired-mode))
-
 (defun tree-sitter-mark-bigger-node ()
 (interactive)
 (let* ((p (point))
@@ -316,11 +303,6 @@ parses its input."
 (use-package tree-sitter-langs
   :ensure t)
 
-(use-package typescript-mode
-  :ensure t
-  :custom ((typescript-indent-level 2)
-           (tab-width 2)))
-
 (use-package vertico
   :ensure t
   :config (vertico-mode)
@@ -342,7 +324,4 @@ parses its input."
 (global-set-key (kbd "C-c <down>") 'windmove-down)
 
 (use-package yaml-mode
-  :ensure t)
-
-(use-package eglot
   :ensure t)
