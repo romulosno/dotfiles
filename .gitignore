@@ -3,3 +3,4 @@
 .emacs.d/elpa
 .emacs.d/eln-cache
 .emacs.d/var
+*.*~
