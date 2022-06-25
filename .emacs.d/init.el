@@ -45,30 +45,7 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (global-linum-mode -1))))
 
-(global-set-key (kbd "<f5>") 'kill-buffer-and-window)
-(global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
-(global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
-
-(use-package no-littering
-  :ensure t)
-(setq auto-save-file-name-transforms
-      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-
-(use-package auto-package-update
-  :ensure t
-  :custom
-  (auto-package-update-interval 7)
-  (auto-package-update-prompt-before-update t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe)
-  (auto-package-update-at-time "09:00"))
-
-(electric-pair-mode 1)			; Fechar parenteses
-(show-paren-mode 1)			; Mostra o parenteses par
-
 (use-package consult
-  ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
          ("C-c m" . consult-mode-command)
@@ -121,6 +98,61 @@
   :init (setq consult-preview-key "M-.")
   :ensure t)
 
+(use-package selectrum
+  :config (selectrum-mode 1)
+  :ensure t)
+
+(use-package orderless
+   :ensure t
+   :init (setq completion-styles '(orderless basic)
+               completion-category-defaults nil
+               completion-category-overrides '((file (styles partial-completion))))
+   :custom
+   (completion-styles '(orderless basic))
+   (completion-category-overrides '((file (styles basic partial-completion)))))
+
+(use-package corfu
+  :ensure t
+  :custom ((corfu-auto t)		; Autocomplete
+           (corfu-separator)) 
+  :init (global-corfu-mode)		; Chamada global
+  (setq completion-styles '(orderless basic)
+      completion-category-defaults nil
+      completion-category-overrides '((file (styles . (partial-completion))))))
+
+(use-package emacs
+  :init
+  (setq completion-cycle-threshold 3)
+  (setq tab-always-indent 'complete))	; Completion com tab
+
+(use-package marginalia
+  :ensure t
+  :bind (("M-A" . marginalia-cycle) 	; Ciclar marginalia no minibuffer
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :init (marginalia-mode))
+
+(use-package embark
+  :ensure t
+
+  :bind
+  (("C-ç" . embark-act)         ;; pick some comfortable binding
+   ("M-ç" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
 (defun rom-lsp ()
   (setq lsp-keymap-prefix "C-M-<return>"
         lsp-idle-delay 0.5
@@ -145,36 +177,9 @@
 (use-package dap-mode
   :ensure t)
 
-(use-package dired
-  :init (setq dired-listing-switches "-agho --group-directories-first")
-  :custom (setq dired-omit-files
-                (rx (or (seq bol (? ".") "#")     ;; emacs autosave files
-                        (seq bol "." (not (any "."))) ;; dot-files
-                        (seq "~" eol)                 ;; backup-files
-                        (seq bol "CVS" eol)           ;; CVS dirs
-                        ))))
-(put 'dired-find-alternate-file 'diasbled nil)
-
-(use-package embark
+(use-package web-mode
   :ensure t
-
-  :bind
-  (("C-ç" . embark-act)         ;; pick some comfortable binding
-   ("M-ç" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-
-  :init
-
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-
-  :config
-
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
+  :mode "\\.html\\'")
 
 (use-package emmet-mode
   :ensure t
@@ -182,59 +187,84 @@
   :hook ((web-mode . emmet-mode)
          (scss-mode . emmet-mode)))
 
-(use-package eshell
-  :bind ("<f7>" . eshell))
-
-(use-package expand-region
-  :ensure t
-  :bind ("C-=" . er/expand-region))
-
-(use-package web-mode
-  :ensure t
-  :mode "\\.html\\'")
-
 (use-package magit
   :ensure t)
 
-(use-package marginalia
-  :ensure t
-  :bind (("M-A" . marginalia-cycle)
-         :map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
-  :init (marginalia-mode))
+(defun tree-sitter-mark-bigger-node ()
+  (interactive)
+  (let* ((p (point))
+         (m (or (mark) p))
+         (beg (min p m))
+         (end (max p m))
+         (root (ts-root-node tree-sitter-tree))
+         (node (ts-get-descendant-for-position-range root beg end))
+         (node-beg (ts-node-start-position node))
+         (node-end (ts-node-end-position node)))
+    ;; Node fits the region exactly. Try its parent node instead.
+    (when (and (= beg node-beg) (= end node-end))
+      (when-let ((node (ts-get-parent node)))
+        (setq node-beg (ts-node-start-position node)
+              node-end (ts-node-end-position node))))
+    (set-mark node-end)
+    (goto-char node-beg)))
 
-(use-package corfu
+(use-package tree-sitter
   :ensure t
-  :custom ((corfu-auto t)
-           (corfu-separator)) 
-  :init (global-corfu-mode)
-  (setq completion-styles '(orderless basic)
-      completion-category-defaults nil
-      completion-category-overrides '((file (styles . (partial-completion))))))        
+  :config (global-tree-sitter-mode 1)
+  :custom (setq er/try-expand-list (append er/try-expand-list
+                                           '(tree-sitter-mark-bigger-node))))
+(use-package tree-sitter-langs
+  :ensure t)
 
-(use-package emacs
-  :init
-  (setq completion-cycle-threshold 3)
-  (setq tab-always-indent 'complete))
+(use-package yaml-mode
+  :ensure t)
+
+(use-package which-key
+  :ensure t
+  :config (which-key-mode 1)
+  :init (setq which-key-idle-delay 0.3))
+
+(use-package no-littering
+  :ensure t)
+(setq auto-save-file-name-transforms
+      `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
+(global-set-key (kbd "<f5>") 'kill-buffer-and-window)
+(global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
+(global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+
+(use-package auto-package-update
+  :ensure t
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-prompt-before-update t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe)
+  (auto-package-update-at-time "09:00"))
+
+(electric-pair-mode 1)			; Fechar parenteses
+(show-paren-mode 1)			; Mostra o parenteses par
+
+(use-package dired
+  :init (setq dired-listing-switches "-agho --group-directories-first")
+  :custom (setq dired-omit-files	      ; Lista de arquivos omitido
+                (rx (or (seq bol (? ".") "#")     ;; emacs autosave files
+                        (seq bol "." (not (any "."))) ;; dot-files
+                        (seq "~" eol)                 ;; backup-files
+                        (seq bol "CVS" eol)           ;; CVS dirs
+                        ))))
+(put 'dired-find-alternate-file 'diasbled nil)
+
+(use-package eshell
+  :bind ("<f7>" . eshell))
 
 (use-package markdown-mode
   :bind ("C-c RET" . markdown-toggle-gfm-checkbox))
 
-(defun prot-orderless-literal-dispatcher (pattern _index _total)
-  "Literal style dispatcher using the equals sign as a suffix.
-It matches PATTERN _INDEX and _TOTAL according to how Orderless
-parses its input."
-  (when (string-suffix-p "=" pattern)
-    `(orderless-literal . ,(substring pattern 0 -1))))
-
-(use-package orderless
+(use-package expand-region
   :ensure t
-  :init (setq completion-styles '(orderless basic)
-              completion-category-defaults nil
-              completion-category-overrides '((file (styles partial-completion))))
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-overrides '((file (styles basic partial-completion prot-orderless-literal-dispatcher)))))
+  :bind ("C-=" . er/expand-region))
 
 (use-package org
   :ensure t
@@ -276,44 +306,10 @@ parses its input."
   :ensure t
   :mode "\\.pdf\\'")
 
-(defun tree-sitter-mark-bigger-node ()
-  (interactive)
-  (let* ((p (point))
-         (m (or (mark) p))
-         (beg (min p m))
-         (end (max p m))
-         (root (ts-root-node tree-sitter-tree))
-         (node (ts-get-descendant-for-position-range root beg end))
-         (node-beg (ts-node-start-position node))
-         (node-end (ts-node-end-position node)))
-    ;; Node fits the region exactly. Try its parent node instead.
-    (when (and (= beg node-beg) (= end node-end))
-      (when-let ((node (ts-get-parent node)))
-        (setq node-beg (ts-node-start-position node)
-              node-end (ts-node-end-position node))))
-    (set-mark node-end)
-    (goto-char node-beg)))
-
-(use-package tree-sitter
-  :ensure t
-  :config (global-tree-sitter-mode 1)
-  :custom (setq er/try-expand-list (append er/try-expand-list
-                                           '(tree-sitter-mark-bigger-node))))
-(use-package tree-sitter-langs
-  :ensure t)
-
-(use-package which-key
-  :ensure t
-  :config (which-key-mode 1)
-  :init (setq which-key-idle-delay 0.3))
-
 (global-set-key (kbd "C-c <left>") 'windmove-left)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
 (global-set-key (kbd "C-c <up>") 'windmove-up)
 (global-set-key (kbd "C-c <down>") 'windmove-down)
-
-(use-package yaml-mode
-  :ensure t)
 
 (defun rom-elisp ()
   (if (locate-library "ediff")
@@ -334,7 +330,3 @@ parses its input."
 (use-package ediff
   :config (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   :init (rom-elisp))
-
-(use-package selectrum
-  :config (selectrum-mode 1)
-  :ensure t)

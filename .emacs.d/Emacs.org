@@ -7,8 +7,10 @@
 #+attr_latex: :width 100px :align center
 [[./emacs.png]]
 
+Minhas configurações para a melhor ferramenta criada na história humana.
+
 * Empacotamento
-Configurações básicas do Emacs: carregamento do módulo package e adição do repo MELPA.
+Configurações para carregamento do módulo package e adição dos repos.
 #+begin_src emacs-lisp
   (require 'package)
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -22,6 +24,7 @@ Configurações básicas do Emacs: carregamento do módulo package e adição do
 #+end_src
 
 * Tema e outros padrões
+Carrega o tema padrão (modus) e seta alguns parâmetros para gestão do garbage collector.
 #+begin_src emacs-lisp
   (use-package emacs
     :init
@@ -66,48 +69,11 @@ Configurações relacionadas ao visual.
     (add-hook mode (lambda () (global-linum-mode -1))))
 #+end_src
 
-* Divisão de tela
-Configurações dos keybindings para dividir tela e matar buffer dividido.
-#+begin_src emacs-lisp
-  (global-set-key (kbd "<f5>") 'kill-buffer-and-window)
-  (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
-  (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
-#+end_src
-
-* Keep clean
-Mantem a pasta do emacs limpinhas (cache).
-#+begin_src emacs-lisp
-  (use-package no-littering
-    :ensure t)
-  (setq auto-save-file-name-transforms
-        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-#+end_src
-
-* Auto-update
-Configura o auto update dos pacotes
-#+begin_src emacs-lisp
-  (use-package auto-package-update
-    :ensure t
-    :custom
-    (auto-package-update-interval 7)
-    (auto-package-update-prompt-before-update t)
-    (auto-package-update-hide-results t)
-    :config
-    (auto-package-update-maybe)
-    (auto-package-update-at-time "09:00"))
-#+end_src
-
-* Parenteses
-Lidando com par de brackets ((), [], {}).
-#+begin_src emacs-lisp
-  (electric-pair-mode 1)			; Fechar parenteses
-  (show-paren-mode 1)			; Mostra o parenteses par
-#+end_src
-
-* Consult
+* Completion framework
+** Consult
+Framework de busca alternativo.
 #+begin_src emacs-lisp
   (use-package consult
-    ;; Replace bindings. Lazily loaded due by `use-package'.
     :bind (;; C-c bindings (mode-specific-map)
            ("C-c h" . consult-history)
            ("C-c m" . consult-mode-command)
@@ -161,7 +127,83 @@ Lidando com par de brackets ((), [], {}).
     :ensure t)               
 #+end_src
 
-* LSP
+** Selectrum
+Adiciona listagem vertical
+#+begin_src emacs-lisp
+  (use-package selectrum
+    :config (selectrum-mode 1)
+    :ensure t)
+#+end_src
+
+** Orderless
+Permite a criação de queries avançadas e fuzzy finding
+#+begin_src emacs-lisp
+ (use-package orderless
+    :ensure t
+    :init (setq completion-styles '(orderless basic)
+                completion-category-defaults nil
+                completion-category-overrides '((file (styles partial-completion))))
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+#+end_src
+
+** Corfu
+Autocomplete para o buffer
+#+begin_src emacs-lisp
+  (use-package corfu
+    :ensure t
+    :custom ((corfu-auto t)		; Autocomplete
+             (corfu-separator)) 
+    :init (global-corfu-mode)		; Chamada global
+    (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles . (partial-completion))))))
+
+  (use-package emacs
+    :init
+    (setq completion-cycle-threshold 3)
+    (setq tab-always-indent 'complete))	; Completion com tab
+#+end_src
+
+** Marginalia
+Adiciona colunas com infos adicionais na completion
+#+begin_src emacs-lisp
+  (use-package marginalia
+    :ensure t
+    :bind (("M-A" . marginalia-cycle) 	; Ciclar marginalia no minibuffer
+           :map minibuffer-local-map
+           ("M-A" . marginalia-cycle))
+    :init (marginalia-mode))
+#+end_src
+
+** Embark
+Adiciona ações de contexto para o buffer e minibuffer.
+#+begin_src emacs-lisp
+  (use-package embark
+    :ensure t
+
+    :bind
+    (("C-ç" . embark-act)         ;; pick some comfortable binding
+     ("M-ç" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+    :init
+
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+
+    :config
+
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
+#+end_src
+
+* Desenvolvimento
+** LSP
 Language server protocol
 #+begin_src emacs-lisp
   (defun rom-lsp ()
@@ -186,52 +228,22 @@ Language server protocol
     :ensure t)
 #+end_src
 
-* DAP-mode
+** DAP-mode
 Modo de debug para o lsp.
 #+begin_src emacs-lisp
   (use-package dap-mode
     :ensure t)
 #+end_src
 
-* Dired
-** Basics
+** HTML
+Adiciona web-mode como modo padrão para html.
 #+begin_src emacs-lisp
-  (use-package dired
-    :init (setq dired-listing-switches "-agho --group-directories-first")
-    :custom (setq dired-omit-files
-                  (rx (or (seq bol (? ".") "#")     ;; emacs autosave files
-                          (seq bol "." (not (any "."))) ;; dot-files
-                          (seq "~" eol)                 ;; backup-files
-                          (seq bol "CVS" eol)           ;; CVS dirs
-                          ))))
-  (put 'dired-find-alternate-file 'diasbled nil)
-#+end_src
-
-* Embark
-#+begin_src emacs-lisp
-  (use-package embark
+  (use-package web-mode
     :ensure t
-
-    :bind
-    (("C-ç" . embark-act)         ;; pick some comfortable binding
-     ("M-ç" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-
-    :init
-
-    ;; Optionally replace the key help with a completing-read interface
-    (setq prefix-help-command #'embark-prefix-help-command)
-
-    :config
-
-    ;; Hide the mode line of the Embark live/completions buffers
-    (add-to-list 'display-buffer-alist
-                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                   nil
-                   (window-parameters (mode-line-format . none)))))
+    :mode "\\.html\\'")
 #+end_src
-
-* Emmet
+*** Emmet
+Facilitador de criação de html.
 #+begin_src emacs-lisp
   (use-package emmet-mode
     :ensure t
@@ -240,56 +252,116 @@ Modo de debug para o lsp.
            (scss-mode . emmet-mode)))
 #+end_src
 
-* Eshell
-#+begin_src emacs-lisp
-  (use-package eshell
-    :bind ("<f7>" . eshell))
-#+end_src
-
-* Expand-region
-#+begin_src emacs-lisp
-  (use-package expand-region
-    :ensure t
-    :bind ("C-=" . er/expand-region))
-#+end_src
-
-* HTML
-#+begin_src emacs-lisp
-  (use-package web-mode
-    :ensure t
-    :mode "\\.html\\'")
-#+end_src
-
-* Magit
+** Magit
 Interface para o git.
 #+begin_src emacs-lisp
   (use-package magit
     :ensure t)
 #+end_src
-* Marginalia
-#+begin_src emacs-lisp
-  (use-package marginalia
-    :ensure t
-    :bind (("M-A" . marginalia-cycle)
-           :map minibuffer-local-map
-           ("M-A" . marginalia-cycle))
-    :init (marginalia-mode))
-#+end_src
-* Corfu 
-#+begin_src emacs-lisp
-    (use-package corfu
-      :ensure t
-      :custom ((corfu-auto t)
-               (corfu-separator)) 
-      :init (global-corfu-mode)
-      (setq completion-styles '(orderless basic)
-          completion-category-defaults nil
-          completion-category-overrides '((file (styles . (partial-completion))))))        
 
-    (use-package emacs
-      :init
-      (setq completion-cycle-threshold 3)
-      (setq tab-always-indent 'complete))
+** Tree-sitter
+#+begin_src emacs-lisp
+  (defun tree-sitter-mark-bigger-node ()
+    (interactive)
+    (let* ((p (point))
+           (m (or (mark) p))
+           (beg (min p m))
+           (end (max p m))
+           (root (ts-root-node tree-sitter-tree))
+           (node (ts-get-descendant-for-position-range root beg end))
+           (node-beg (ts-node-start-position node))
+           (node-end (ts-node-end-position node)))
+      ;; Node fits the region exactly. Try its parent node instead.
+      (when (and (= beg node-beg) (= end node-end))
+        (when-let ((node (ts-get-parent node)))
+          (setq node-beg (ts-node-start-position node)
+                node-end (ts-node-end-position node))))
+      (set-mark node-end)
+      (goto-char node-beg)))
+
+  (use-package tree-sitter
+    :ensure t
+    :config (global-tree-sitter-mode 1)
+    :custom (setq er/try-expand-list (append er/try-expand-list
+                                             '(tree-sitter-mark-bigger-node))))
+  (use-package tree-sitter-langs
+    :ensure t)
+#+end_src
+
+** Yaml-mode
+#+begin_src emacs-lisp
+  (use-package yaml-mode
+    :ensure t)
+#+end_src
+
+* Utils
+Pacotes úteis para o meu dia-a-dia no emacs
+** Which key
+Habilita uma ajudinha com os keybindings.
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure t
+    :config (which-key-mode 1)
+    :init (setq which-key-idle-delay 0.3))
+#+end_src
+
+** Keep clean
+Mantém a pasta do emacs limpinhas (cache).
+#+begin_src emacs-lisp
+  (use-package no-littering
+    :ensure t)
+  (setq auto-save-file-name-transforms
+        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+#+end_src
+
+** Divisão de tela
+Configurações dos keybindings para dividir tela e matar buffer dividido.
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<f5>") 'kill-buffer-and-window)
+  (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
+  (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+#+end_src
+
+** Auto-update
+Configura o auto update dos pacotes
+#+begin_src emacs-lisp
+  (use-package auto-package-update
+    :ensure t
+    :custom
+    (auto-package-update-interval 7)
+    (auto-package-update-prompt-before-update t)
+    (auto-package-update-hide-results t)
+    :config
+    (auto-package-update-maybe)
+    (auto-package-update-at-time "09:00"))
+#+end_src
+
+** Parenteses
+Lidando com par de brackets ((), [], {}).
+#+begin_src emacs-lisp
+  (electric-pair-mode 1)			; Fechar parenteses
+  (show-paren-mode 1)			; Mostra o parenteses par
+#+end_src
+
+* Dired
+Configurações para o modo de visualização de diretórios
+#+begin_src emacs-lisp
+  (use-package dired
+    :init (setq dired-listing-switches "-agho --group-directories-first")
+    :custom (setq dired-omit-files	      ; Lista de arquivos omitido
+                  (rx (or (seq bol (? ".") "#")     ;; emacs autosave files
+                          (seq bol "." (not (any "."))) ;; dot-files
+                          (seq "~" eol)                 ;; backup-files
+                          (seq bol "CVS" eol)           ;; CVS dirs
+                          ))))
+  (put 'dired-find-alternate-file 'diasbled nil)
+#+end_src
+
+* Eshell
+Elisp shell.
+#+begin_src emacs-lisp
+  (use-package eshell
+    :bind ("<f7>" . eshell))
 #+end_src
 
 * Markdown
@@ -298,23 +370,12 @@ Interface para o git.
     :bind ("C-c RET" . markdown-toggle-gfm-checkbox))
 #+end_src
 
-* Orderless
+* Expand-region
+Comandos para expandir a seleção de maneira inteligente.
 #+begin_src emacs-lisp
-  (defun prot-orderless-literal-dispatcher (pattern _index _total)
-    "Literal style dispatcher using the equals sign as a suffix.
-  It matches PATTERN _INDEX and _TOTAL according to how Orderless
-  parses its input."
-    (when (string-suffix-p "=" pattern)
-      `(orderless-literal . ,(substring pattern 0 -1))))
-
-  (use-package orderless
+  (use-package expand-region
     :ensure t
-    :init (setq completion-styles '(orderless basic)
-                completion-category-defaults nil
-                completion-category-overrides '((file (styles partial-completion))))
-    :custom
-    (completion-styles '(orderless basic))
-    (completion-category-overrides '((file (styles basic partial-completion prot-orderless-literal-dispatcher)))))
+    :bind ("C-=" . er/expand-region))
 #+end_src
 
 * Org
@@ -373,56 +434,12 @@ Configuração para realizar tangle automático do arquivo  e recarregar configu
 
 #+end_src
 
-* Tree-sitter
-#+begin_src emacs-lisp
-  (defun tree-sitter-mark-bigger-node ()
-    (interactive)
-    (let* ((p (point))
-           (m (or (mark) p))
-           (beg (min p m))
-           (end (max p m))
-           (root (ts-root-node tree-sitter-tree))
-           (node (ts-get-descendant-for-position-range root beg end))
-           (node-beg (ts-node-start-position node))
-           (node-end (ts-node-end-position node)))
-      ;; Node fits the region exactly. Try its parent node instead.
-      (when (and (= beg node-beg) (= end node-end))
-        (when-let ((node (ts-get-parent node)))
-          (setq node-beg (ts-node-start-position node)
-                node-end (ts-node-end-position node))))
-      (set-mark node-end)
-      (goto-char node-beg)))
-
-  (use-package tree-sitter
-    :ensure t
-    :config (global-tree-sitter-mode 1)
-    :custom (setq er/try-expand-list (append er/try-expand-list
-                                             '(tree-sitter-mark-bigger-node))))
-  (use-package tree-sitter-langs
-    :ensure t)
-#+end_src
-
-* Which key
-Habilita uma ajudinha com os keybindings.
-#+begin_src emacs-lisp
-  (use-package which-key
-    :ensure t
-    :config (which-key-mode 1)
-    :init (setq which-key-idle-delay 0.3))
-#+end_src
-
 * Windmove
 #+begin_src emacs-lisp
   (global-set-key (kbd "C-c <left>") 'windmove-left)
   (global-set-key (kbd "C-c <right>") 'windmove-right)
   (global-set-key (kbd "C-c <up>") 'windmove-up)
   (global-set-key (kbd "C-c <down>") 'windmove-down)
-#+end_src
-
-* Yaml-mode
-#+begin_src emacs-lisp
-  (use-package yaml-mode
-    :ensure t)
 #+end_src
 
 * Ediff
@@ -448,9 +465,3 @@ Habilita uma ajudinha com os keybindings.
     :init (rom-elisp))
 #+end_src
 
-* Selectrum
-#+begin_src emacs-lisp
-  (use-package selectrum
-    :config (selectrum-mode 1)
-    :ensure t)
-#+end_src
