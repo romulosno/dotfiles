@@ -38,7 +38,8 @@ Configurações básicas do Emacs: carregamento do módulo package e adição do
     (setq enable-recursive-minibuffers t)
     :config
     (load-theme 'modus-vivendi t nil) ;; OR (load-theme 'modus-vivendi)
-    :bind ("<f6>" . modus-themes-toggle))
+    :bind (("<f6>" . modus-themes-toggle)
+           ("<escape>" . 'keyboard-escape-quit)))
 
 #+end_src
 
@@ -46,7 +47,6 @@ Configurações básicas do Emacs: carregamento do módulo package e adição do
 Configurações relacionadas ao visual.
 #+begin_src emacs-lisp
   (setq inhibit-startup-screen t)		; Remove a tela inicial padrão
-                                          ; (global-linum-mode 1)			; Número das linhas
   (setq visible-bell 1)			; Remove o beep infernal
   (toggle-scroll-bar -1)			; Remove scroll
   (tool-bar-mode -1)			; Remove barra de ferramenta
@@ -435,22 +435,3 @@ Habilita uma ajudinha com os keybindings.
   (use-package yaml-mode
     :ensure t)
 #+end_src
-
-* Popper
-#+begin_src emacs-lisp
-  (use-package popper
-    :ensure t ; or :straight t
-    :bind (("C-<dead-acute>"   . popper-toggle-latest)
-           ("M-<dead-acute>"   . popper-cycle)
-           ("C-M-<dead-acute>" . popper-toggle-type))
-    :init
-    (setq popper-reference-buffers
-          '("\\*Messages\\*"
-            "Output\\*$"
-            "\\*Async Shell Command\\*"
-            help-mode
-            compilation-mode))
-    (popper-mode +1)
-    (popper-echo-mode +1)) 
-#+end_src
-
