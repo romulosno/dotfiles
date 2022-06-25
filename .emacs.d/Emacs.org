@@ -3,8 +3,8 @@
 #+OPTIONS: toc:nil  
 
 #+name: Emacs logo
-#+attr_html: :width 100px
-#+attr_latex: :width 100px
+#+attr_html: :width 100px :align center
+#+attr_latex: :width 100px :align center
 [[./emacs.png]]
 
 * Empacotamento
