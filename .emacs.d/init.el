@@ -27,18 +27,16 @@
         '(read-only t cursor-intangible t face minibuffer-prompt))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
   (setq enable-recursive-minibuffers t)
-  :config
-  (load-theme 'modus-vivendi t nil) ;; OR (load-theme 'modus-vivendi)
-  :bind ("<f6>" . modus-themes-toggle))
+  :config (load-theme 'modus-vivendi t nil)
+  :bind (("<f6>" . modus-themes-toggle)
+         ("<escape>" . 'keyboard-escape-quit)))
 
 (setq inhibit-startup-screen t)		; Remove a tela inicial padrão
-                                        ; (global-linum-mode 1)			; Número das linhas
 (setq visible-bell 1)			; Remove o beep infernal
 (toggle-scroll-bar -1)			; Remove scroll
 (tool-bar-mode -1)			; Remove barra de ferramenta
 (menu-bar-mode -1)			; Remove menus
 (set-fringe-mode 10)			; Padding
-
 ;; Desabilita números das linhas em alguns modos
 (dolist (mode '(org-mode-hook
                 term-mode-hook
@@ -96,8 +94,8 @@
          ("M-g h" . consult-outline)               ;; Alternative: consult-org-heading
          ("M-g m" . consult-mark)
          ("M-g k" . consult-global-mark)
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-imenu-multi)
+         ("M-s i" . consult-imenu)
+         ("M-g i" . consult-imenu-multi)
          ;; M-s bindings (search-map)
          ("M-s d" . consult-find)
          ("M-s D" . consult-locate)
@@ -118,9 +116,10 @@
          ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
          ;; Minibuffer history
          :map minibuffer-local-map
-         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+         ("M-s" . consult-history)
          ("M-r" . consult-history))
-  :ensure t)                ;; orig. previous-matching-history-element
+  :init (setq consult-preview-key "M-.")
+  :ensure t)
 
 (defun rom-lsp ()
   (setq lsp-keymap-prefix "C-M-<return>"
@@ -194,9 +193,6 @@
   :ensure t
   :mode "\\.html\\'")
 
-;; (use-package icomplete
-;;   :config (icomplete-mode 1))
-
 (use-package magit
   :ensure t)
 
@@ -211,7 +207,10 @@
   :ensure t
   :custom ((corfu-auto t)
            (corfu-separator)) 
-  :init (global-corfu-mode))        
+  :init (global-corfu-mode)
+  (setq completion-styles '(orderless basic)
+      completion-category-defaults nil
+      completion-category-overrides '((file (styles . (partial-completion))))))        
 
 (use-package emacs
   :init
@@ -303,16 +302,6 @@ parses its input."
 (use-package tree-sitter-langs
   :ensure t)
 
-(use-package vertico
-  :ensure t
-  :config (vertico-mode)
-  :custom ((setq vertico-multiform-commands
-                 '((consult-imenu buffer indexed)
-                   (execute-extended-command unobtrusive)))
-           (setq vertico-multiform-categories
-                 '((file grid)
-                   (consult-grep buffer)))))
-
 (use-package which-key
   :ensure t
   :config (which-key-mode 1)
@@ -326,17 +315,26 @@ parses its input."
 (use-package yaml-mode
   :ensure t)
 
-(use-package popper
-  :ensure t ; or :straight t
-  :bind (("C-<dead-acute>"   . popper-toggle-latest)
-         ("M-<dead-acute>"   . popper-cycle)
-         ("C-M-<dead-acute>" . popper-toggle-type))
-  :init
-  (setq popper-reference-buffers
-        '("\\*Messages\\*"
-          "Output\\*$"
-          "\\*Async Shell Command\\*"
-          help-mode
-          compilation-mode))
-  (popper-mode +1)
-  (popper-echo-mode +1))
+(defun rom-elisp ()
+  (if (locate-library "ediff")
+      (progn
+        (autoload 'ediff-files "ediff")
+        (autoload 'ediff-buffers "ediff")
+
+        (eval-after-load "ediff" '(progn
+                                    (message "doing ediff customisation")
+                                    (setq diff-switches               "-u"
+                                          ediff-custom-diff-options   "-U3"
+                                          ediff-split-window-function 'split-window-horizontally
+                                          ediff-window-setup-function 'ediff-setup-windows-plain)
+
+                                    (add-hook 'ediff-startup-hook 'ediff-toggle-wide-display)
+                                    (add-hook 'ediff-cleanup-hook 'ediff-toggle-wide-display)
+                                    (add-hook 'ediff-suspend-hook 'ediff-toggle-wide-display))))))
+(use-package ediff
+  :config (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  :init (rom-elisp))
+
+(use-package selectrum
+  :config (selectrum-mode 1)
+  :ensure t)
