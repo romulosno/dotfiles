@@ -2,8 +2,7 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 #+OPTIONS: toc:nil  
 
-#+attr_html: :width 200px
-#+attr_latex: :width 200px
+#+name: Emacs logo
 [[./emacs.png]]
 
 * Empacotamento
