@@ -1,3 +1,7 @@
+(setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
+(setq gc-cons-threshold (* 50 1000 1000)) ; Performance
+(setq read-process-output-max (* 1024 1024)) ; Performance
+
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
@@ -10,11 +14,7 @@
 
 (use-package emacs
   :init
-  (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
-  (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
-  (setq read-process-output-max (* 1024 1024)) ; Performance
   (defalias 'yes-or-no-p 'y-or-n-p)     ; Define y e n para sim e não
-
   (setq modus-themes-italic-constructs t
         modus-themes-bold-constructs nil
         modus-themes-region '(bg-only no-extend))
@@ -27,7 +27,7 @@
         '(read-only t cursor-intangible t face minibuffer-prompt))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
   (setq enable-recursive-minibuffers t)
-  :config (load-theme 'modus-vivendi t nil)
+  :config (load-theme 'modus-vivendi t nil) ;
   :bind (("<f6>" . modus-themes-toggle)
          ("<escape>" . 'keyboard-escape-quit)))
 
@@ -103,13 +103,13 @@
   :ensure t)
 
 (use-package orderless
-   :ensure t
-   :init (setq completion-styles '(orderless basic)
-               completion-category-defaults nil
-               completion-category-overrides '((file (styles partial-completion))))
-   :custom
-   (completion-styles '(orderless basic))
-   (completion-category-overrides '((file (styles basic partial-completion)))))
+  :ensure t
+  :init (setq completion-styles '(orderless basic)
+              completion-category-defaults nil
+              completion-category-overrides '((file (styles partial-completion))))
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package corfu
   :ensure t
@@ -117,8 +117,8 @@
            (corfu-separator)) 
   :init (global-corfu-mode)		; Chamada global
   (setq completion-styles '(orderless basic)
-      completion-category-defaults nil
-      completion-category-overrides '((file (styles . (partial-completion))))))
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles . (partial-completion))))))
 
 (use-package emacs
   :init
@@ -174,6 +174,10 @@
 (use-package lsp-java
   :ensure t)
 
+(use-package lsp-dart 
+  :ensure t
+  :init (setq lsp-dart-flutter-sdk-dir "/home/romulo/flutter"))
+
 (use-package dap-mode
   :ensure t)
 
@@ -186,6 +190,11 @@
   :init (setq emmet-move-cursor-between-quotes t)
   :hook ((web-mode . emmet-mode)
          (scss-mode . emmet-mode)))
+
+(use-package dart-mode
+  :ensure t
+  :hook (dart-mode . lsp)
+  :mode "\\.html\\'")
 
 (use-package magit
   :ensure t)
@@ -297,19 +306,24 @@
 
 (defun efs/org-babel-tangle-config ()
   (when (string-equal (buffer-file-name)
-                      (expand-file-name "~/dotfiles/.emacs.d/Emacs.org"))
+                      (expand-file-name "~/dotfiles/emacs/Emacs.org"))
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle)
-      (load "~/dotfiles/.emacs.d/init.el"))))
+      (load "~/dotfiles/emacs/init.el"))))
 
 (use-package pdf-tools
   :ensure t
   :mode "\\.pdf\\'")
 
-(global-set-key (kbd "C-c <left>") 'windmove-left)
-(global-set-key (kbd "C-c <right>") 'windmove-right)
-(global-set-key (kbd "C-c <up>") 'windmove-up)
-(global-set-key (kbd "C-c <down>") 'windmove-down)
+;; (global-set-key (kbd "C-c <left>") 'windmove-left)
+;; (global-set-key (kbd "C-c <right>") 'windmove-right)
+;; (global-set-key (kbd "C-c <up>") 'windmove-up)
+;; (global-set-key (kbd "C-c <down>") 'windmove-down)
+
+(use-package ace-window
+  :ensure t
+  :bind
+  ("C-M-o" . ace-window))
 
 (defun rom-elisp ()
   (if (locate-library "ediff")
@@ -330,3 +344,20 @@
 (use-package ediff
   :config (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   :init (rom-elisp))
+
+(use-package ace-window
+  :ensure t
+  :bind ("C-x O" . ace-window))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(eglot yasnippet yaml-mode which-key web-mode vterm use-package tree-sitter-langs selectrum rust-mode projectile pdf-tools org-bullets orderless no-littering modus-themes marginalia magit lsp-java lsp-dart logos gradle-mode git-gutter+ flutter expand-region emmet-mode embark eldoc-box docker corfu consult cape auto-package-update)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

@@ -9,6 +9,14 @@
 
 Minhas configurações para a melhor ferramenta criada na história humana.
 
+* Performance
+Seta alguns parâmetros para gestão do garbage collector.
+#+begin_src emacs-lisp
+  (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
+  (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
+  (setq read-process-output-max (* 1024 1024)) ; Performance
+#+end_src
+
 * Empacotamento
 Configurações para carregamento do módulo package e adição dos repos.
 #+begin_src emacs-lisp
@@ -24,15 +32,11 @@ Configurações para carregamento do módulo package e adição dos repos.
 #+end_src
 
 * Tema e outros padrões
-Carrega o tema padrão (modus) e seta alguns parâmetros para gestão do garbage collector.
+Carrega o tema padrão (modus).
 #+begin_src emacs-lisp
   (use-package emacs
     :init
-    (setq native-comp-async-report-warnings-errors nil) ;; Remove avisos do native-comp
-    (setq gc-cons-threshold (* 50 1000 1000)) ; Performance
-    (setq read-process-output-max (* 1024 1024)) ; Performance
     (defalias 'yes-or-no-p 'y-or-n-p)     ; Define y e n para sim e não
-
     (setq modus-themes-italic-constructs t
           modus-themes-bold-constructs nil
           modus-themes-region '(bg-only no-extend))
@@ -45,7 +49,7 @@ Carrega o tema padrão (modus) e seta alguns parâmetros para gestão do garbage
           '(read-only t cursor-intangible t face minibuffer-prompt))
     (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
     (setq enable-recursive-minibuffers t)
-    :config (load-theme 'modus-vivendi t nil)
+    :config (load-theme 'modus-vivendi t nil) ;
     :bind (("<f6>" . modus-themes-toggle)
            ("<escape>" . 'keyboard-escape-quit)))
 
@@ -138,7 +142,7 @@ Adiciona listagem vertical
 ** Orderless
 Permite a criação de queries avançadas e fuzzy finding
 #+begin_src emacs-lisp
- (use-package orderless
+  (use-package orderless
     :ensure t
     :init (setq completion-styles '(orderless basic)
                 completion-category-defaults nil
@@ -157,8 +161,8 @@ Autocomplete para o buffer
              (corfu-separator)) 
     :init (global-corfu-mode)		; Chamada global
     (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles . (partial-completion))))))
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (partial-completion))))))
 
   (use-package emacs
     :init
@@ -227,6 +231,12 @@ Language server protocol
   (use-package lsp-java
     :ensure t)
 #+end_src
+*** LSP Dart
+#+begin_src emacs-lisp
+  (use-package lsp-dart 
+    :ensure t
+    :init (setq lsp-dart-flutter-sdk-dir "/home/romulo/flutter"))
+#+end_src
 
 ** DAP-mode
 Modo de debug para o lsp.
@@ -250,6 +260,14 @@ Facilitador de criação de html.
     :init (setq emmet-move-cursor-between-quotes t)
     :hook ((web-mode . emmet-mode)
            (scss-mode . emmet-mode)))
+#+end_src
+
+** Dart
+#+begin_src emacs-lisp
+  (use-package dart-mode
+    :ensure t
+    :hook (dart-mode . lsp)
+    :mode "\\.html\\'")
 #+end_src
 
 ** Magit
@@ -420,10 +438,10 @@ Configuração para realizar tangle automático do arquivo  e recarregar configu
 #+begin_src emacs-lisp
   (defun efs/org-babel-tangle-config ()
     (when (string-equal (buffer-file-name)
-                        (expand-file-name "~/dotfiles/.emacs.d/Emacs.org"))
+                        (expand-file-name "~/dotfiles/emacs/Emacs.org"))
       (let ((org-confirm-babel-evaluate nil))
         (org-babel-tangle)
-        (load "~/dotfiles/.emacs.d/init.el"))))
+        (load "~/dotfiles/emacs/init.el"))))
 #+end_src
 
 * PDF-Tools
@@ -436,10 +454,18 @@ Configuração para realizar tangle automático do arquivo  e recarregar configu
 
 * Windmove
 #+begin_src emacs-lisp
-  (global-set-key (kbd "C-c <left>") 'windmove-left)
-  (global-set-key (kbd "C-c <right>") 'windmove-right)
-  (global-set-key (kbd "C-c <up>") 'windmove-up)
-  (global-set-key (kbd "C-c <down>") 'windmove-down)
+  ;; (global-set-key (kbd "C-c <left>") 'windmove-left)
+  ;; (global-set-key (kbd "C-c <right>") 'windmove-right)
+  ;; (global-set-key (kbd "C-c <up>") 'windmove-up)
+  ;; (global-set-key (kbd "C-c <down>") 'windmove-down)
+#+end_src
+
+* Ace-window
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :ensure t
+    :bind
+    ("C-M-o" . ace-window))
 #+end_src
 
 * Ediff
@@ -463,5 +489,12 @@ Configuração para realizar tangle automático do arquivo  e recarregar configu
   (use-package ediff
     :config (setq ediff-window-setup-function 'ediff-setup-windows-plain)
     :init (rom-elisp))
+#+end_src
+
+* Ace window
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :ensure t
+    :bind ("C-x O" . ace-window))
 #+end_src
 
